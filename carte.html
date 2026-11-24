@@ -669,7 +669,8 @@ function drawCtx() {
     // ---- Lignes urbaines (metro, RER, Transilien, tram) : un bloc par ligne, triees, terminus l'un sous l'autre
     const ORDER = {METRO: 1, RER: 2, TRANSILIEN: 3, TRAM: 4, FUNI: 5};
     const natural = (a, b) => String(a).localeCompare(String(b), "fr", {numeric: true});
-    const idfLines = d.lines.filter(l => l.net === "idf").map(l => Object.assign({}, l, {lf: lineFor(l.id) || {net: "idf", id: l.id, name: l.name, mode: l.mode}}));
+    const idfLines = d.lines.filter(l => l.net === "idf" && l.mode !== "TER").map(   // TER d'IDF : dans l'onglet TER, pas en ligne urbaine
+      l => Object.assign({}, l, {lf: lineFor(l.id) || {net: "idf", id: l.id, name: l.name, mode: l.mode}}));
     (d.metro_next || []).forEach(x => { if (!idfLines.some(l => l.id === x.line_id))
       idfLines.push({net: "idf", id: x.line_id, name: x.line, mode: "METRO", lf: lineFor(x.line_id) || {net: "idf", id: x.line_id, name: x.line, mode: "METRO"}}); });
     idfLines.sort((a, b) => (ORDER[a.lf.mode] || 9) - (ORDER[b.lf.mode] || 9) || natural(a.lf.name, b.lf.name));
