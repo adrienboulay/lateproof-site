@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Carte des retards · LateProof</title>
-<meta name="description" content="Ponctualité des gares en direct, grèves annoncées et travaux à venir, en France.">
+<meta name="description" content="Ponctualité des gares en direct, ta région, ta ligne, ton trajet : grèves annoncées et travaux à venir, en France.">
 <meta name="theme-color" content="#2f6bff">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Meme identite que la page d'accueil. Mise en page : carte a gauche, « tableau des perturbations » a droite. */
+/* Meme identite que la page d'accueil. Mise en page : barre de recherche, carte a gauche, panneau a droite. */
 :root{
   --bg:#f4f6fa; --surface:#ffffff; --surface2:#e9eef6; --fg:#121823; --muted:#55627a; --line:#d7deea;
   --blue:#2f6bff; --on-blue:#ffffff; --amber:#a86a00; --mint:#0d8a5f; --red:#c93439;
@@ -35,21 +35,45 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--display)}
 .lang button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue)}
 h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;line-height:1.1}
 .sub{color:var(--muted);margin:0 0 14px;max-width:46rem}
-.kpis{display:flex;flex-wrap:wrap;gap:8px 22px;margin-bottom:14px;font-size:.92rem;color:var(--muted)}
+.kpis{display:flex;flex-wrap:wrap;gap:8px 22px;margin-bottom:12px;font-size:.92rem;color:var(--muted)}
 .kpis b{font:700 1.15rem var(--mono);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:6px}
 .kpis .late b{color:var(--amber)}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;padding-bottom:28px}
-#map{height:min(72vh,720px);min-height:420px;border-radius:14px;border:1px solid var(--line);background:var(--surface2)}
+
+/* Barre d'outils : recherche, profil, region, trajet */
+.tools{display:grid;grid-template-columns:minmax(0,1.6fr) auto auto auto;gap:10px;align-items:end;margin-bottom:14px}
+.field{display:grid;gap:4px;font-size:.78rem;font-weight:600;color:var(--muted);min-width:0}
+.field input,.field select{font:500 .95rem var(--display);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;min-width:0}
+.field select{padding-right:28px}
+.combo{position:relative}
+.sugg{position:absolute;z-index:1000;left:0;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 30px rgb(0 0 0/.16);max-height:340px;overflow:auto;padding:4px;margin:0;list-style:none}
+.sugg li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.92rem}
+.sugg li[aria-selected="true"],.sugg li:hover{background:var(--bg)}
+.sugg .k{font:700 .64rem var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);min-width:52px}
+.sugg .x{color:var(--muted);font-size:.8rem;margin-left:auto;text-align:right}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;color:var(--fg);font:600 .82rem var(--display);padding:9px 11px;cursor:pointer;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.btn{font:700 .88rem var(--display);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:9px 13px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted);padding:6px 8px}
+.btn:disabled{opacity:.5;cursor:default}
+@media (max-width:980px){.tools{grid-template-columns:1fr 1fr}.tools .search{grid-column:1/-1}}
+@media (max-width:520px){.tools{grid-template-columns:1fr}.seg{display:flex}.seg button{flex:1;padding-inline:6px}}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding-bottom:28px}
+#map{height:min(74vh,740px);min-height:420px;border-radius:14px;border:1px solid var(--line);background:var(--surface2)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted);margin-top:8px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;max-height:min(72vh,720px)}
-.panel header{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;max-height:min(74vh,740px)}
+.panel>header{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:10px}
 .panel h2{font-size:1.05rem;margin:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips button{font:600 .8rem var(--display);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 10px;cursor:pointer}
 .chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.list{overflow:auto;padding:6px;display:grid;gap:4px;align-content:start}
+.list{overflow:auto;padding:6px;display:grid;gap:4px;align-content:start;min-height:0}
 .item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;text-align:left;border:1px solid transparent;background:none;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--fg);font:inherit}
 .item:hover,.item.on{background:var(--bg);border-color:var(--line)}
 .tag{font:700 .68rem var(--mono);letter-spacing:.06em;padding:3px 6px;border-radius:5px;align-self:start;text-transform:uppercase}
@@ -59,10 +83,39 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
 .item .ttl{font-size:.9rem;line-height:1.35;min-width:0;overflow-wrap:anywhere}
 .item .meta{grid-column:2;font:500 .75rem var(--mono);color:var(--muted)}
 .item .sev{color:var(--red);font-weight:700}
-.empty{padding:20px 12px;color:var(--muted);font-size:.9rem}
+.empty{padding:20px 12px;color:var(--muted);font-size:.9rem;margin:0}
+
+/* Carte de contexte : region, ligne ou trajet selectionne */
+.ctx{border-bottom:1px solid var(--line);padding:14px;display:grid;gap:10px;background:color-mix(in srgb,var(--blue) 5%,var(--surface));border-radius:14px 14px 0 0;overflow:auto;max-height:52%}
+.ctx-head{display:flex;align-items:flex-start;gap:8px}
+.ctx-head h3{margin:0;font-size:1.1rem;line-height:1.25;flex:1;min-width:0;overflow-wrap:anywhere}
+.ctx-head .kind{display:block;font:700 .66rem var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
+.stats{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.84rem;color:var(--muted)}
+.stats b{font:700 1rem var(--mono);color:var(--fg);margin-right:4px;font-variant-numeric:tabular-nums}
+.stats .warn b{color:var(--amber)}.stats .bad b{color:var(--red)}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hint{font-size:.82rem;color:var(--muted);margin:0}
+.trip-form{display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:end}
+.trip-form .field{grid-column:1}
+.trip-form .swap{grid-column:2;grid-row:1/3;align-self:center}
+.trip-form .go{grid-column:1/-1}
+table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
+.trains th{font:600 .7rem var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.trains td{padding:6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:top}
+.trains td.t{font:600 .86rem var(--mono)}
+.trains tr.past td{opacity:.55}
+.d{display:inline-block;font:700 .7rem var(--mono);padding:2px 5px;border-radius:4px;margin-left:4px}
+.d-ok{background:color-mix(in srgb,var(--mint) 16%,transparent);color:var(--mint)}
+.d-mid{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.d-bad{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.saved{display:flex;flex-wrap:wrap;gap:6px}
+.saved button{font:600 .78rem var(--display);border:1px dashed var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 10px;cursor:pointer}
+.soon{font-size:.8rem;color:var(--muted);border-left:3px solid var(--blue);padding-left:8px;margin:0}
 .note{font-size:.8rem;color:var(--muted);padding-block:0 30px}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
-@media (max-width:980px){.layout{grid-template-columns:1fr}.panel{max-height:none}.panel .list{max-height:60vh}}
+.leaflet-popup-content .btn{margin-top:6px;padding:5px 9px;font-size:.78rem}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;font-size:.88rem;z-index:2000}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.panel{max-height:none}.panel .list{max-height:60vh}.ctx{max-height:none}}
 </style>
 </head>
 <body>
@@ -74,12 +127,35 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
   </header>
 
   <h1 data-i18n="h1">Les retards en direct, et ce qui arrive</h1>
-  <p class="sub" data-i18n="sub">Chaque point est une gare : sa couleur montre la part de trains arrivés avec 15 minutes de retard ou plus aujourd'hui. À droite, les grèves annoncées et les travaux à venir.</p>
+  <p class="sub" data-i18n="sub">Cherche ta région, ta ligne ou ton trajet : la carte montre les retards du jour, la liste les grèves et travaux qui te concernent.</p>
   <div class="kpis" aria-live="polite">
     <span><b id="kSt">—</b><span data-i18n="kSt">gares suivies</span></span>
     <span class="late"><b id="kLate">—</b><span data-i18n="kLate">passages à +15 min</span></span>
     <span><b id="kCanc">—</b><span data-i18n="kCanc">arrêts supprimés</span></span>
     <span><b id="kUpd">—</b><span data-i18n="kUpd">dernière mise à jour</span></span>
+  </div>
+
+  <div class="tools">
+    <div class="field search"><label for="q" data-i18n="qLabel">Rechercher</label>
+      <div class="combo">
+        <input id="q" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="qList" aria-autocomplete="list"
+               data-i18n-ph="qPh" placeholder="Une région, une ligne (RER A, TER C30…), une gare">
+        <ul class="sugg" id="qList" role="listbox" hidden></ul>
+      </div>
+    </div>
+    <div class="field"><span id="profLbl" data-i18n="profLbl">Mon profil</span>
+      <div class="seg" id="profile" role="group" aria-labelledby="profLbl">
+        <button type="button" data-p="quotidien" aria-pressed="false" data-i18n="pQ">Au quotidien</button>
+        <button type="button" data-p="grandes_lignes" aria-pressed="false" data-i18n="pG">Grandes lignes</button>
+        <button type="button" data-p="les_deux" aria-pressed="true" data-i18n="pB">Les deux</button>
+      </div>
+    </div>
+    <div class="field"><label for="region" data-i18n="regLbl">Ma région</label>
+      <select id="region"><option value="" data-i18n="regAll">Toute la France</option></select>
+    </div>
+    <div class="field"><span aria-hidden="true">&nbsp;</span>
+      <button class="btn primary" type="button" id="tripBtn" data-i18n="tripBtn">Mon trajet</button>
+    </div>
   </div>
 
   <div class="layout">
@@ -94,8 +170,9 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
     </div>
 
     <aside class="panel" aria-labelledby="pTitle">
+      <section class="ctx" id="ctx" aria-live="polite" hidden></section>
       <header>
-        <h2 id="pTitle" data-i18n="pTitle">Perturbations annoncées</h2>
+        <h2 id="pTitle"><span data-i18n="pTitle">Perturbations annoncées</span><span id="pScope"></span></h2>
         <div class="chips" id="kinds" role="group" aria-label="Type">
           <button type="button" data-k="all" aria-pressed="true" data-i18n="cAll">Tout</button>
           <button type="button" data-k="greve" aria-pressed="false" data-i18n="cGreve">Grèves</button>
@@ -110,74 +187,134 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
       <div class="list" id="list"><p class="empty" data-i18n="loading">Chargement…</p></div>
     </aside>
   </div>
-  <p class="note" data-i18n="note">Sources : données temps réel SNCF et Île-de-France Mobilités enregistrées par LateProof toutes les 2 minutes ; agenda public des grèves (cestlagreve.fr). Chiffres de la journée en cours, heure de Paris.</p>
+  <p class="note" data-i18n="note">Sources : données temps réel SNCF et Île-de-France Mobilités enregistrées par LateProof toutes les 2 minutes ; agenda public des grèves (cestlagreve.fr). Chiffres de la journée en cours, heure de Paris. Ton profil, ta région et tes trajets restent dans ce navigateur.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="config.js"></script>
 <script>
-const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", sub:"Each dot is a station: its colour shows the share of trains arriving 15+ minutes late today. On the right, announced strikes and upcoming works.",
-  kSt:"stations tracked", kLate:"arrivals 15+ min late", kCanc:"cancelled stops", kUpd:"last update", l1:"under 5% late", l2:"5 to 20%", l3:"over 20% or cancellations",
+// ================================================================= Textes FR / EN
+const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", sub:"Search your region, your line or your trip: the map shows today's delays, the list the strikes and works that affect you.",
+  kSt:"stations tracked", kLate:"arrivals 15+ min late", kCanc:"cancelled stops", kUpd:"last update", qLabel:"Search", qPh:"A region, a line (RER A, TER C30…), a station",
+  profLbl:"My profile", pQ:"Daily commute", pG:"Long distance", pB:"Both", regLbl:"My region", regAll:"All of France", tripBtn:"My trip",
+  l1:"under 5% late", l2:"5 to 20%", l3:"over 20% or cancellations",
   l4:"Size: number of arrivals", pTitle:"Announced disruptions", cAll:"All", cGreve:"Strikes", cTravaux:"Works", cIncident:"Incidents",
-  wNow:"Ongoing", w7:"Next 7 days", loading:"Loading…", note:"Sources: SNCF and Île-de-France Mobilités real-time data, recorded by LateProof every 2 minutes; public strike calendar (cestlagreve.fr). Figures for the current day, Paris time.",
+  wNow:"Ongoing", w7:"Next 7 days", loading:"Loading…", note:"Sources: SNCF and Île-de-France Mobilités real-time data, recorded by LateProof every 2 minutes; public strike calendar (cestlagreve.fr). Figures for the current day, Paris time. Your profile, region and trips stay in this browser.",
   none:"Nothing announced for this filter.", greve:"strike", travaux:"works", incident:"incident", now:"ongoing", from:"from", to:"to", block:"service stopped",
-  pass:"arrivals", late:"15+ min late", canc:"cancelled", avg:"average delay", min:"min", unavailable:"Live data is not connected yet."};
+  pass:"arrivals", late:"15+ min late", canc:"cancelled", avg:"average delay", min:"min", unavailable:"Live data is not connected yet.",
+  kRegion:"Region", kLine:"Line", kStation:"Station", kTrip:"My trip", trains:"trains today", lateT:"15+ min late", cancT:"cancelled",
+  stTracked:"stations with data", gap:"average wait between trains", worst:"Most affected", close:"Close", share:"Share", shared:"Link copied",
+  setRegion:"Set as my region", isRegion:"This is your region", tripFrom:"From", tripTo:"To", tripGo:"Show this trip", swap:"Swap",
+  tripPh:"Station", save:"Keep this trip", savedOk:"Trip kept in this browser", mine:"My trips",
+  soon:"Coming at launch: the trips you insure with LateProof will show up here, with their cover status.",
+  dep:"Dep.", arr:"Arr.", line_:"Line", onTime:"on time", cancelled:"cancelled", noTrip:"No direct train found today between these two stations. Try nearby stations or another day.",
+  pickBoth:"Pick a departure and an arrival station from the suggestions.", tripDay:"Today on this trip", tripFromTo:"Departures from now",
+  fromHere:"Trip from here", toHere:"Trip to here", lineOf:"lines", around:"Around me", locating:"Locating…", noLoc:"Location unavailable",
+  scopeRegion:" · region", scopeLine:" · this line", scopeTrip:" · this trip", noData:"No train recorded on this line today.", loadingCtx:"Loading…"};
 const FR = {}; document.querySelectorAll("[data-i18n]").forEach(el => FR[el.dataset.i18n] = el.textContent);
+FR.qPh = document.getElementById("q").placeholder;
 Object.assign(FR, {none:"Rien d'annoncé pour ce filtre.", greve:"grève", travaux:"travaux", incident:"incident", now:"en cours", from:"du", to:"au",
-  block:"service interrompu", pass:"passages", late:"à +15 min", canc:"supprimés", avg:"retard moyen", min:"min", unavailable:"Les données en direct ne sont pas encore branchées."});
+  block:"service interrompu", pass:"passages", late:"à +15 min", canc:"supprimés", avg:"retard moyen", min:"min", unavailable:"Les données en direct ne sont pas encore branchées.",
+  kRegion:"Région", kLine:"Ligne", kStation:"Gare", kTrip:"Mon trajet", trains:"trains aujourd'hui", lateT:"à +15 min", cancT:"supprimés",
+  stTracked:"gares avec des chiffres", gap:"d'attente moyenne entre deux rames", worst:"Les plus touchées", close:"Fermer", share:"Partager", shared:"Lien copié",
+  setRegion:"En faire ma région", isRegion:"C'est ta région", tripFrom:"Départ", tripTo:"Arrivée", tripGo:"Voir ce trajet", swap:"Inverser",
+  tripPh:"Gare", save:"Garder ce trajet", savedOk:"Trajet gardé dans ce navigateur", mine:"Mes trajets",
+  soon:"Au lancement : les trajets que tu assures avec LateProof s'afficheront ici, avec l'état de ta couverture.",
+  dep:"Dép.", arr:"Arr.", line_:"Ligne", onTime:"à l'heure", cancelled:"supprimé", noTrip:"Aucun train direct trouvé aujourd'hui entre ces deux gares. Essaie des gares proches ou un autre jour.",
+  pickBoth:"Choisis une gare de départ et une gare d'arrivée dans les suggestions.", tripDay:"Aujourd'hui sur ce trajet", tripFromTo:"Départs à partir de maintenant",
+  fromHere:"Partir d'ici", toHere:"Arriver ici", lineOf:"lignes", around:"Autour de moi", locating:"Localisation…", noLoc:"Position indisponible",
+  scopeRegion:" · région", scopeLine:" · cette ligne", scopeTrip:" · ce trajet", noData:"Aucun train enregistré sur cette ligne aujourd'hui.", loadingCtx:"Chargement…"});
 let lang = "fr"; try { lang = localStorage.getItem("lp-lang") || (navigator.language || "fr").slice(0, 2); } catch (e) {}
 if (lang !== "en") lang = "fr";
 const L_ = () => lang === "en" ? EN : FR;
 const loc = () => lang === "en" ? "en-GB" : "fr-FR";
+const store = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+               set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }};
 function setLang(l) {
   lang = l; document.documentElement.lang = l;
   document.querySelectorAll("[data-i18n]").forEach(el => { const v = L_()[el.dataset.i18n]; if (v) el.textContent = v; });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = L_()[el.dataset.i18nPh]);
   document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
-  try { localStorage.setItem("lp-lang", l); } catch (e) {}
-  drawStations(); drawList();
+  store.set("lp-lang", l);
+  drawStations(); drawList(); drawCtx();
 }
 document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
 
-// ---------------------------------------------------------------- Carte
+// ================================================================= Regions (cadres approximatifs, pour zoomer et filtrer)
+const REGIONS = [
+  ["idf", "Île-de-France", [[48.12, 1.44], [49.24, 3.56]]], ["hdf", "Hauts-de-France", [[48.83, 1.38], [51.09, 4.26]]],
+  ["nor", "Normandie", [[48.18, -1.95], [50.07, 1.80]]], ["ges", "Grand Est", [[47.42, 3.38], [50.17, 8.23]]],
+  ["bre", "Bretagne", [[47.28, -5.14], [48.90, -1.01]]], ["pdl", "Pays de la Loire", [[46.27, -2.56], [48.57, 0.92]]],
+  ["cvl", "Centre-Val de Loire", [[46.35, 0.05], [48.94, 3.13]]], ["bfc", "Bourgogne-Franche-Comté", [[46.15, 2.85], [48.40, 7.14]]],
+  ["naq", "Nouvelle-Aquitaine", [[42.78, -1.79], [47.18, 2.61]]], ["ara", "Auvergne-Rhône-Alpes", [[44.12, 2.06], [46.80, 7.19]]],
+  ["occ", "Occitanie", [[42.33, -0.33], [45.05, 4.85]]], ["pac", "Provence-Alpes-Côte d'Azur", [[42.98, 4.23], [45.13, 7.72]]],
+  ["cor", "Corse", [[41.33, 8.53], [43.03, 9.56]]]].map(([id, name, b]) => ({id, name, b}));
+const regionById = id => REGIONS.find(r => r.id === id);
+const inB = (b, lat, lon) => lat >= b[0][0] && lat <= b[1][0] && lon >= b[0][1] && lon <= b[1][1];
+const regionSel = document.getElementById("region");
+REGIONS.forEach(r => regionSel.add(new Option(r.name, r.id)));
+
+// ================================================================= Carte
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const map = L.map("map", {preferCanvas: true, zoomSnap: .5}).setView([46.6, 2.4], 5.5);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 18, attribution: "&copy; OpenStreetMap"}).addTo(map);
-const stationLayer = L.layerGroup().addTo(map), focusLayer = L.layerGroup().addTo(map);
-let stations = [], items = [], kind = "all", when = 7, updatedAt = null;
+const stationLayer = L.layerGroup().addTo(map), ctxLayer = L.layerGroup().addTo(map), focusLayer = L.layerGroup().addTo(map);
+let stations = [], items = [], lines = [], kind = "all", when = 7, updatedAt = null;
+let profile = store.get("lp-profile") || "les_deux", myRegion = store.get("lp-region") || "";
+let ctx = null;  // null | {type:"region", r} | {type:"line", line, data} | {type:"trip", a, b, data} | {type:"tripform"}
 
 function color(s) {
   const r = s.n ? s.late15 / s.n : 0;
   if (r > .2 || s.cancelled > 0) return css("--dot-bad");
   return r >= .05 ? css("--dot-mid") : css("--dot-ok");
 }
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const nf = () => new Intl.NumberFormat(loc());
+const shown = () => profile === "grandes_lignes" ? stations.filter(s => s.net === "sncf") : stations;
+function popup(s) {
+  const T = L_(), f = nf();
+  return `<b>${esc(s.name)}</b><br>${f.format(s.n)} ${T.pass} · <b>${f.format(s.late15)}</b> ${T.late}<br>` +
+    `${s.cancelled ? `${f.format(s.cancelled)} ${T.canc} · ` : ""}${s.avg != null ? `${T.avg} ${s.avg} ${T.min}` : ""}` +
+    (s.id ? `<div class="row"><button class="btn" type="button" data-trip="a" data-st="${esc(s.net + "|" + s.id)}">${T.fromHere}</button>` +
+            `<button class="btn" type="button" data-trip="b" data-st="${esc(s.net + "|" + s.id)}">${T.toHere}</button></div>` : "");
+}
 function drawStations() {
   stationLayer.clearLayers();
   if (!stations.length) return;  // garde les tirets tant qu'aucune donnee n'est arrivee
-  const T = L_(), nf = new Intl.NumberFormat(loc());
-  stations.forEach(s => {
-    L.circleMarker([s.lat, s.lon], {radius: Math.min(3 + Math.sqrt(s.n) * .7, 14), color: color(s), fillColor: color(s), fillOpacity: .75, weight: 1})
-      .bindPopup(`<b>${esc(s.name)}</b><br>${nf.format(s.n)} ${T.pass} · <b>${nf.format(s.late15)}</b> ${T.late}<br>` +
-        `${s.cancelled ? `${nf.format(s.cancelled)} ${T.canc} · ` : ""}${T.avg} ${s.avg} ${T.min}`).addTo(stationLayer);
+  const dim = ctx && (ctx.type === "line" || ctx.type === "trip"), f = nf(), list = shown();
+  list.forEach(s => {
+    L.circleMarker([s.lat, s.lon], {radius: Math.min(3 + Math.sqrt(s.n) * .7, 14), color: color(s), fillColor: color(s),
+      fillOpacity: dim ? .15 : .75, opacity: dim ? .25 : 1, weight: 1}).bindPopup(() => popup(s)).addTo(stationLayer);
   });
-  const sum = k => stations.reduce((a, s) => a + s[k], 0);
-  document.getElementById("kSt").textContent = nf.format(stations.length);
-  document.getElementById("kLate").textContent = nf.format(sum("late15"));
-  document.getElementById("kCanc").textContent = nf.format(sum("cancelled"));
-  if (updatedAt) document.getElementById("kUpd").textContent = new Date(updatedAt * 1000).toLocaleTimeString(loc(), {hour: "2-digit", minute: "2-digit"});
+  const sum = k => list.reduce((a, s) => a + s[k], 0);
+  document.getElementById("kSt").textContent = f.format(list.length);
+  document.getElementById("kLate").textContent = f.format(sum("late15"));
+  document.getElementById("kCanc").textContent = f.format(sum("cancelled"));
+  if (updatedAt) document.getElementById("kUpd").textContent = new Date(updatedAt * 1000).toLocaleTimeString(loc(), {hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris"});
 }
 
-// ---------------------------------------------------------------- Perturbations
-const fmtDay = t => new Date(t * 1000).toLocaleDateString(loc(), {day: "numeric", month: "short"});
+// ================================================================= Perturbations (filtrees selon la region, la ligne ou le trajet)
+const fmtDay = t => new Date(t * 1000).toLocaleDateString(loc(), {day: "numeric", month: "short", timeZone: "Europe/Paris"});
+function inCtx(x) {
+  if (!ctx || ctx.type === "tripform") return true;
+  if (x.src === "agenda") return true;   // greves annoncees : nationales ou transports, toujours utiles
+  if (ctx.type === "region") return (x.stops || []).some(s => inB(ctx.r.b, s[1], s[2]));
+  const ids = ctx.type === "line" ? [ctx.line.id] : (ctx.data && ctx.data.line_ids) || [];
+  if ((x.line_ids || []).some(id => ids.includes(id))) return true;
+  if (ctx.type === "trip" && ctx.bounds) return (x.stops || []).some(s => ctx.bounds.contains([s[1], s[2]]));
+  return false;
+}
 function visible() {
   const now = Date.now() / 1000;
-  return items.filter(x => (kind === "all" || x.kind === kind) && x.kind !== "info" &&
+  return items.filter(x => (kind === "all" || x.kind === kind) && x.kind !== "info" && inCtx(x) &&
     (when === 7 || ((x.t_start ?? 0) <= now && (x.t_end ?? Infinity) >= now)));
 }
 function drawList() {
   const T = L_(), list = document.getElementById("list"), v = visible(), now = Date.now() / 1000;
+  document.getElementById("pScope").textContent = !ctx || ctx.type === "tripform" ? "" :
+    ({region: T.scopeRegion, line: T.scopeLine, trip: T.scopeTrip})[ctx.type];
   if (!v.length) { list.innerHTML = `<p class="empty">${items.length || stations.length ? T.none : T.unavailable}</p>`; return; }
-  list.innerHTML = v.slice(0, 200).map((x, i) => {
+  list.innerHTML = v.slice(0, 200).map(x => {
     const on = (x.t_start ?? 0) <= now;
     const period = on ? T.now + (x.t_end ? ` · ${T.to} ${fmtDay(x.t_end)}` : "") : `${T.from} ${fmtDay(x.t_start)}${x.t_end ? ` ${T.to} ${fmtDay(x.t_end)}` : ""}`;
     return `<button class="item" type="button" data-i="${items.indexOf(x)}"><span class="tag t-${x.kind}">${T[x.kind] || x.kind}</span>
@@ -199,17 +336,293 @@ const chips = (id, attr, set) => document.getElementById(id).addEventListener("c
   set(b.dataset[attr]); focusLayer.clearLayers(); drawList();
 });
 chips("kinds", "k", v => kind = v); chips("when", "w", v => when = +v);
+function setWhen(w) { when = w; document.querySelectorAll("#when button").forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.w === w))); }
 
-// ---------------------------------------------------------------- Donnees (Supabase, fonctions publiques d'agregats)
+// ================================================================= Recherche (regions, lignes, gares)
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[-'’_/.,()]/g, " ").replace(/\s+/g, " ").trim();
+const MODES = {OUI: "TGV INOUI", OGO: "OUIGO", IC: "Intercités", ICN: "Intercités de nuit", LYR: "Lyria", TT: "Tram-train", NAV: "Navette",
+  METRO: "Métro", TRAM: "Tram", FUNI: "Funiculaire", TRANSILIEN: "Ligne"};
+function lineLabel(l) {
+  if (l.net === "idf") {
+    if (l.mode === "RER") return "RER " + l.name;
+    if (l.mode === "TRAM" && /^T/i.test(l.name)) return "Tram " + l.name;
+    return (MODES[l.mode] || l.mode || "") + " " + l.name;
+  }
+  return `${MODES[l.mode] || l.mode || "Train"} ${l.name || ""}`.trim();
+}
+const lineSub = l => l.long && l.long !== l.name ? l.long : (l.net === "idf" ? "Île-de-France" : "");
+function score(text, q) {
+  const t = norm(text); if (!q) return 0;
+  const toks = q.split(" "); if (!toks.every(k => t.includes(k))) return 0;
+  return (t.startsWith(q) ? 3 : 0) + (t.split(" ").some(w => w.startsWith(toks[0])) ? 2 : 1);
+}
+function suggest(qRaw, only) {
+  const q = norm(qRaw), out = [];
+  if (!q) return out;
+  if (!only) REGIONS.forEach(r => { const s = score(r.name, q); if (s) out.push({type: "region", s: s + 2, r, label: r.name}); });
+  if (!only) lines.forEach(l => { const s = Math.max(score(lineLabel(l), q), score(l.long, q) - 1);
+    if (s) out.push({type: "line", s: s + (l.n ? 1 : 0), l, label: lineLabel(l), sub: lineSub(l)}); });
+  const seen = new Set();
+  stations.forEach(st => { const s = score(st.name, q); if (!s) return;
+    const key = st.net + norm(st.name); if (seen.has(key)) return; seen.add(key);
+    out.push({type: "station", s: s + Math.min(st.n / 400, 1), st, label: st.name, sub: st.net === "idf" ? "Île-de-France Mobilités" : "SNCF"}); });
+  return out.sort((a, b) => b.s - a.s).slice(0, 9);
+}
+function combo(input, list, only, onPick) {
+  let opts = [], act = -1;
+  const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); act = -1; input.removeAttribute("aria-activedescendant"); };
+  const render = () => {
+    const T = L_(), K = {region: T.kRegion, line: T.kLine, station: T.kStation};
+    opts = suggest(input.value, only);
+    if (!opts.length) return close();
+    list.innerHTML = opts.map((o, i) => `<li role="option" id="${list.id}-${i}" aria-selected="${i === act}" data-i="${i}"><span class="k">${K[o.type]}</span>` +
+      `<span>${esc(o.label)}</span>${o.sub ? `<span class="x">${esc(o.sub)}</span>` : ""}</li>`).join("");
+    list.hidden = false; input.setAttribute("aria-expanded", "true");
+  };
+  const pick = i => { const o = opts[i]; if (!o) return; input.value = o.label; close(); onPick(o); };
+  input.addEventListener("input", () => { act = -1; render(); });
+  input.addEventListener("focus", () => { if (input.value) render(); });
+  input.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (list.hidden) render(); if (!opts.length) return;
+      act = (act + (e.key === "ArrowDown" ? 1 : -1) + opts.length) % opts.length; e.preventDefault();
+      list.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === act)));
+      input.setAttribute("aria-activedescendant", `${list.id}-${act}`);
+    } else if (e.key === "Enter") { if (!list.hidden) { e.preventDefault(); pick(act >= 0 ? act : 0); } }
+    else if (e.key === "Escape") close();
+  });
+  list.addEventListener("mousedown", e => { const li = e.target.closest("li"); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+  input.addEventListener("blur", () => setTimeout(close, 120));
+}
+combo(document.getElementById("q"), document.getElementById("qList"), null, o => {
+  if (o.type === "region") openRegion(o.r.id);
+  else if (o.type === "line") openLine(o.l);
+  else { map.setView([o.st.lat, o.st.lon], 13); L.popup().setLatLng([o.st.lat, o.st.lon]).setContent(popup(o.st)).openOn(map); }
+});
+
+// ================================================================= Contexte : region, ligne, trajet
+const ctxEl = document.getElementById("ctx");
+function head(kindLbl, title, extra = "") {
+  const T = L_();
+  return `<div class="ctx-head"><h3><span class="kind">${esc(kindLbl)}</span>${title}</h3>${extra}` +
+    `<button class="btn ghost" type="button" data-act="share" aria-label="${T.share}">${T.share}</button>` +
+    `<button class="btn ghost" type="button" data-act="close" aria-label="${T.close}">✕</button></div>`;
+}
+const stat = (n, lbl, cls = "") => `<span class="${cls}"><b>${nf().format(n)}</b>${esc(lbl)}</span>`;
+const hhmm = t => new Date(t * 1000).toLocaleTimeString(loc(), {hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris"});
+function badge(delay, cancelled) {
+  const T = L_();
+  if (cancelled) return `<span class="d d-bad">${T.cancelled}</span>`;
+  const m = Math.round((delay || 0) / 60);
+  if (m < 1) return `<span class="d d-ok">${T.onTime}</span>`;
+  return `<span class="d ${m >= 15 ? "d-bad" : m >= 5 ? "d-mid" : "d-ok"}">+${m} ${T.min}</span>`;
+}
+function savedTrips() { try { return JSON.parse(store.get("lp-trips") || "[]"); } catch (e) { return []; } }
+function savedHtml() {
+  const s = savedTrips(); if (!s.length) return "";
+  return `<div><p class="hint">${L_().mine}</p><div class="saved">${s.map((t, i) =>
+    `<button type="button" data-saved="${i}">${esc(t.an)} → ${esc(t.bn)}</button>`).join("")}</div></div>`;
+}
+
+function drawCtx() {
+  const T = L_();
+  if (!ctx) { ctxEl.hidden = true; ctxEl.innerHTML = ""; return; }
+  ctxEl.hidden = false;
+  if (ctx.type === "region") {
+    const st = shown().filter(s => inB(ctx.r.b, s.lat, s.lon)), sum = k => st.reduce((a, s) => a + s[k], 0);
+    const worst = st.filter(s => s.n >= 10).sort((a, b) => b.late15 / b.n - a.late15 / a.n).slice(0, 3).filter(s => s.late15);
+    ctxEl.innerHTML = head(T.kRegion, esc(ctx.r.name)) +
+      `<div class="stats">${stat(st.length, T.stTracked)}${stat(sum("late15"), T.lateT, "warn")}${stat(sum("cancelled"), T.cancT, "bad")}</div>` +
+      (worst.length ? `<p class="hint">${T.worst} : ${worst.map(s => `${esc(s.name)} (${Math.round(100 * s.late15 / s.n)} %)`).join(", ")}</p>` : "") +
+      `<div class="row">${myRegion === ctx.r.id ? `<span class="hint">✓ ${T.isRegion}</span>` :
+        `<button class="btn" type="button" data-act="myregion">${T.setRegion}</button>`}</div>`;
+  } else if (ctx.type === "line") {
+    const d = ctx.data, l = ctx.line;
+    if (!d) { ctxEl.innerHTML = head(T.kLine, esc(lineLabel(l))) + `<p class="hint">${T.loadingCtx}</p>`; return; }
+    const metro = !d.n && d.stops.some(s => s.gap != null), gaps = d.stops.filter(s => s.gap != null).map(s => +s.gap);
+    const worst = d.stops.filter(s => s.n >= 5 && s.late15).sort((a, b) => b.late15 / b.n - a.late15 / a.n).slice(0, 3);
+    ctxEl.innerHTML = head(T.kLine, esc(lineLabel(l)) + (lineSub(l) ? `<br><small class="hint">${esc(lineSub(l))}</small>` : "")) +
+      (metro ? `<div class="stats"><span><b>${(gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(1)} ${T.min}</b>${T.gap}</span></div>`
+        : d.n ? `<div class="stats">${stat(d.n, T.trains)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}</div>`
+        : `<p class="hint">${T.noData}</p>`) +
+      (worst.length ? `<p class="hint">${T.worst} : ${worst.map(s => `${esc(s.name)} (${Math.round(100 * s.late15 / s.n)} %)`).join(", ")}</p>` : "");
+  } else {
+    // Formulaire de trajet (+ resultat si un trajet est affiche)
+    const a = ctx.a, b = ctx.b, d = ctx.type === "trip" ? ctx.data : null, now = Date.now() / 1000;
+    let res = "";
+    if (ctx.type === "trip" && !d) res = `<p class="hint">${T.loadingCtx}</p>`;
+    else if (d && !d.trains.length && !d.n) res = `<p class="hint">${T.noTrip}</p>`;
+    else if (d) {
+      res = `<div><p class="hint">${T.tripDay}</p><div class="stats">${stat(d.n, T.trains)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}</div></div>` +
+        (d.trains.length ? `<table class="trains"><thead><tr><th>${T.dep}</th><th>${T.arr}</th><th>${T.line_}</th></tr></thead><tbody>` +
+          d.trains.map(t => `<tr class="${t.arr + (t.arr_delay || 0) < now ? "past" : ""}"><td class="t">${hhmm(t.dep)}${badge(t.dep_delay, t.cancelled)}</td>` +
+            `<td class="t">${hhmm(t.arr)}${t.cancelled ? "" : badge(t.arr_delay, false)}</td><td>${esc(MODES[t.mode] || t.mode || "")} ${esc(t.line || t.num)}</td></tr>`).join("") +
+          `</tbody></table>` : "") +
+        `<div class="row"><button class="btn" type="button" data-act="save">★ ${T.save}</button></div>`;
+    }
+    ctxEl.innerHTML = head(T.kTrip, a && b && ctx.type === "trip" ? `${esc(a.name)} → ${esc(b.name)}` : T.kTrip) +
+      `<div class="trip-form">
+        <div class="field"><label for="ta">${T.tripFrom}</label><div class="combo"><input id="ta" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="taList" placeholder="${T.tripPh}" value="${esc(a ? a.name : "")}"><ul class="sugg" id="taList" role="listbox" hidden></ul></div></div>
+        <div class="field"><label for="tb">${T.tripTo}</label><div class="combo"><input id="tb" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="tbList" placeholder="${T.tripPh}" value="${esc(b ? b.name : "")}"><ul class="sugg" id="tbList" role="listbox" hidden></ul></div></div>
+        <button class="btn swap" type="button" data-act="swap" aria-label="${T.swap}">⇅</button>
+        <button class="btn primary go" type="button" data-act="go">${T.tripGo}</button>
+      </div>` + res + savedHtml() + `<p class="soon">${T.soon}</p>`;
+    combo(document.getElementById("ta"), document.getElementById("taList"), "station", o => { ctx.a = o.st; });
+    combo(document.getElementById("tb"), document.getElementById("tbList"), "station", o => { ctx.b = o.st; });
+  }
+}
+ctxEl.addEventListener("click", e => {
+  const s = e.target.closest("[data-saved]");
+  if (s) { const t = savedTrips()[+s.dataset.saved], a = findSt(t.a), b = findSt(t.b); if (a && b) openTrip(a, b); return; }
+  const act = e.target.closest("[data-act]")?.dataset.act; if (!act) return;
+  if (act === "close") setCtx(null);
+  else if (act === "share") share();
+  else if (act === "myregion") { myRegion = ctx.r.id; store.set("lp-region", myRegion); regionSel.value = myRegion; drawCtx(); }
+  else if (act === "swap") { const a = ctx.a, b = ctx.b; if (a && b) openTrip(b, a); else { ctx.a = b; ctx.b = a; drawCtx(); } }
+  else if (act === "go") { if (ctx.a && ctx.b) openTrip(ctx.a, ctx.b); else toast(L_().pickBoth); }
+  else if (act === "save") {
+    const t = savedTrips().filter(x => !(x.a === key(ctx.a) && x.b === key(ctx.b)));
+    t.unshift({a: key(ctx.a), b: key(ctx.b), an: ctx.a.name, bn: ctx.b.name}); store.set("lp-trips", JSON.stringify(t.slice(0, 6)));
+    toast(L_().savedOk); drawCtx();
+  }
+});
+const key = s => s.net + "|" + s.id;
+const findSt = k => stations.find(s => key(s) === k);
+
+function setCtx(c) {
+  ctx = c; ctxLayer.clearLayers(); focusLayer.clearLayers();
+  drawStations(); drawCtx(); drawList();
+  const h = !c || c.type === "tripform" ? "" : c.type === "region" ? "region=" + c.r.id :
+    c.type === "line" ? "ligne=" + encodeURIComponent(c.line.net + "|" + c.line.id) : "trajet=" + encodeURIComponent(key(c.a) + ">" + key(c.b));
+  history.replaceState(null, "", h ? "#" + h : location.pathname + location.search);
+  setTimeout(() => map.invalidateSize(), 0);
+}
+function openRegion(id) {
+  const r = regionById(id); if (!r) { setCtx(null); map.setView([46.6, 2.4], 5.5); return; }
+  setCtx({type: "region", r}); map.fitBounds(r.b);
+}
+function openLine(l) {
+  setCtx({type: "line", line: l, data: null});
+  rpc("public_line", {p_net: l.net, p_id: l.id}).then(d => {
+    if (!ctx || ctx.type !== "line" || ctx.line !== l) return;
+    ctx.data = d || {stops: [], paths: [], n: 0}; drawCtx();
+    const blue = css("--blue"), pts = [];
+    ctx.data.paths.forEach(p => { L.polyline(p, {color: blue, weight: 4, opacity: .8}).addTo(ctxLayer); pts.push(...p); });
+    ctx.data.stops.forEach(s => { pts.push([s.lat, s.lon]);
+      L.circleMarker([s.lat, s.lon], {radius: 6, color: "#fff", weight: 2, fillColor: s.gap != null ? blue : color(s), fillOpacity: 1})
+        .bindPopup(`<b>${esc(s.name)}</b><br>` + (s.gap != null ? `${s.gap} ${L_().min} ${L_().gap}` :
+          `${nf().format(s.n)} ${L_().pass} · <b>${s.late15}</b> ${L_().late}${s.avg != null ? `<br>${L_().avg} ${s.avg} ${L_().min}` : ""}`)).addTo(ctxLayer); });
+    if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(.1));
+  }).catch(() => { ctx.data = {stops: [], paths: [], n: 0}; drawCtx(); });
+}
+// Trajet : meme reseau requis ; si les deux gares sont sur deux reseaux (SNCF / IDF), on essaie la gare jumelle a moins de 600 m.
+function twins(s) {
+  const out = [s], cosl = Math.cos(s.lat * Math.PI / 180);
+  stations.forEach(o => { if (o !== s && Math.hypot((o.lat - s.lat) * 111, (o.lon - s.lon) * 111 * cosl) < .6) out.push(o); });
+  return out;
+}
+async function openTrip(a, b) {
+  setCtx({type: "trip", a, b, data: null});
+  const pairs = [];
+  twins(a).forEach(x => twins(b).forEach(y => { if (x.net === y.net && x.id !== y.id) pairs.push([x, y]); }));
+  const exact = p => (p[0] === a) + (p[1] === b);
+  pairs.sort((p, q) => exact(q) - exact(p));
+  let d = null;
+  for (const [x, y] of pairs.slice(0, 4)) {
+    try { d = await rpc("public_trip", {p_net: x.net, p_from: x.id, p_to: y.id}); } catch (e) { d = null; }
+    if (d && (d.n || d.trains.length)) break;
+  }
+  if (!ctx || ctx.type !== "trip" || ctx.a !== a || ctx.b !== b) return;
+  ctx.data = d || {n: 0, late15: 0, cancelled: 0, trains: [], path: null, line_ids: []};
+  const path = (ctx.data.path || []).map(p => [p[1], p[2]]), red = css("--blue");
+  if (path.length > 1) {
+    L.polyline(path, {color: red, weight: 5, opacity: .85}).addTo(ctxLayer);
+    ctx.data.path.forEach((p, i) => L.circleMarker([p[1], p[2]], {radius: i === 0 || i === path.length - 1 ? 7 : 4, color: "#fff", weight: 2,
+      fillColor: red, fillOpacity: 1}).bindTooltip(esc(p[0])).addTo(ctxLayer));
+    ctx.bounds = L.latLngBounds(path).pad(.15); map.fitBounds(ctx.bounds);
+  } else {
+    ctx.bounds = L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]).pad(.2); map.fitBounds(ctx.bounds);
+    [a, b].forEach(s => L.circleMarker([s.lat, s.lon], {radius: 7, color: "#fff", weight: 2, fillColor: red, fillOpacity: 1}).bindTooltip(esc(s.name)).addTo(ctxLayer));
+  }
+  drawCtx(); drawList();
+}
+// Boutons « Partir d'ici / Arriver ici » dans les bulles des gares
+map.getContainer().addEventListener("click", e => {
+  const b = e.target.closest("[data-trip]"); if (!b) return;
+  const s = findSt(b.dataset.st); if (!s) return;
+  const c = ctx && (ctx.type === "trip" || ctx.type === "tripform") ? ctx : {type: "tripform"};
+  c[b.dataset.trip] = s; map.closePopup();
+  if (c.a && c.b) openTrip(c.a, c.b); else { if (ctx !== c) setCtx(c); else drawCtx(); }
+});
+document.getElementById("tripBtn").addEventListener("click", () => {
+  if (ctx && (ctx.type === "trip" || ctx.type === "tripform")) { document.getElementById("ta")?.focus(); return; }
+  setCtx({type: "tripform"}); document.getElementById("ta")?.focus();
+});
+regionSel.addEventListener("change", () => {
+  myRegion = regionSel.value; store.set("lp-region", myRegion || null);
+  openRegion(myRegion);
+});
+
+// ================================================================= Profil
+function applyProfile(p, first) {
+  profile = p; store.set("lp-profile", p);
+  document.querySelectorAll("#profile button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === p)));
+  if (!first) setWhen(p === "quotidien" ? 0 : 7);
+  drawStations(); drawList(); if (ctx && ctx.type === "region") drawCtx();
+}
+document.getElementById("profile").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  applyProfile(b.dataset.p);
+  if (b.dataset.p === "grandes_lignes" && (!ctx || ctx.type === "region")) { setCtx(null); map.setView([46.6, 2.4], 5.5); }
+  else if (b.dataset.p === "quotidien" && myRegion && !ctx) openRegion(myRegion);
+});
+
+// ================================================================= Partage
+function toast(t) {
+  const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); el.textContent = t;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 2200);
+}
+async function share() {
+  const url = location.href;
+  try { if (navigator.share) { await navigator.share({title: document.title, url}); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(url); toast(L_().shared); } catch (e) { prompt("URL", url); }
+}
+
+// ================================================================= Donnees (Supabase, fonctions publiques d'agregats)
 const CFG = window.LP_CONFIG || {};
 const rpc = (fn, body = {}) => fetch(`${CFG.url}/rest/v1/rpc/${fn}`, {method: "POST", body: JSON.stringify(body),
   headers: {apikey: CFG.key, "Content-Type": "application/json"}}).then(r => r.ok ? r.json() : Promise.reject(r.status));
+let booted = false;
 function load() {
-  if (!CFG.url) { drawList(); return; }
-  rpc("public_station_map").then(d => { stations = d.stations || []; updatedAt = d.updated_at; drawStations(); }).catch(() => {});
-  rpc("public_disruptions", {days: 7}).then(d => { items = d.items || []; drawList(); }).catch(() => drawList());
+  if (!CFG.url) { drawList(); return Promise.resolve(); }
+  return Promise.all([
+    rpc("public_station_map").then(d => { stations = d.stations || []; updatedAt = d.updated_at; drawStations(); if (ctx && ctx.type === "region") drawCtx(); }).catch(() => {}),
+    rpc("public_disruptions", {days: 7}).then(d => { items = d.items || []; drawList(); }).catch(() => drawList()),
+    lines.length ? null : rpc("public_lines").then(d => { lines = d || []; }).catch(() => {})]);
 }
-setLang(lang); load(); setInterval(load, 300000);
+// Ouverture : lien partage (#region=, #ligne=, #trajet=) > trajet saisi a l'inscription > region (profil quotidien) > France
+function boot() {
+  if (booted) return; booted = true;
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("region")) return openRegion(h.get("region"));
+  if (h.get("ligne")) { const [net, id] = h.get("ligne").split("|"); const l = lines.find(x => x.net === net && x.id === id); if (l) return openLine(l); }
+  if (h.get("trajet")) { const [ka, kb] = h.get("trajet").split(">"); const a = findSt(ka), b = findSt(kb); if (a && b) return openTrip(a, b); }
+  const saved = savedTrips()[0];
+  if (saved && profile !== "grandes_lignes") { const a = findSt(saved.a), b = findSt(saved.b); if (a && b) return openTrip(a, b); }
+  const typed = store.get("lp-line");   // trajet tape a l'inscription, ex. « Lyon → Grenoble »
+  if (typed) {
+    const parts = typed.split(/\s*(?:→|->|>|–|—| - |\/| a | à | to )\s*/i).filter(Boolean);
+    if (parts.length === 2) { const a = suggest(parts[0], "station")[0], b = suggest(parts[1], "station")[0];
+      if (a && b) { store.set("lp-line", null); return openTrip(a.st, b.st); } }
+  }
+  if (myRegion && profile !== "grandes_lignes") return openRegion(myRegion);
+}
+regionSel.value = myRegion;
+applyProfile(["quotidien", "grandes_lignes", "les_deux"].includes(profile) ? profile : "les_deux", true);
+if (profile === "quotidien") setWhen(0);
+setLang(lang);
+load().then(boot);
+setInterval(load, 300000);
 // La carte se cree avant que la mise en page soit stable (polices, grille) : on lui redonne sa vraie taille.
 const fit = () => map.invalidateSize();
 window.addEventListener("load", fit); window.addEventListener("resize", fit); setTimeout(fit, 400);

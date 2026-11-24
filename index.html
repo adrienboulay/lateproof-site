@@ -300,6 +300,8 @@ form.addEventListener("submit", async (e) => {
   if (!form.consent.checked) { say("noConsent", "err"); form.consent.focus(); return; }
   btn.disabled = true; say("sending");
   const params = new URLSearchParams(location.search);
+  // Retenu dans CE navigateur seulement (pas d'email) : la carte s'ouvre ensuite sur ton profil et ton trajet.
+  try { localStorage.setItem("lp-profile", form.profile.value); if (form.line.value.trim()) localStorage.setItem("lp-line", form.line.value.trim()); } catch (e2) {}
   try {
     const r = await api("waitlist", {method: "POST", headers: {Prefer: "return=minimal"},
       body: JSON.stringify({email, lang, profile: form.profile.value, line: form.line.value.trim() || null, consent: true,
