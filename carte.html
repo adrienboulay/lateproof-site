@@ -330,10 +330,10 @@ const dimmed = () => ctx && (ctx.type === "line" || ctx.type === "trip");
 function drawSegments() {
   segLayer.clearLayers();
   const z = map.getZoom(), w = z < 7 ? 1.3 : z < 9 ? 2.2 : z < 11 ? 3.2 : 4.5, dim = dimmed();
-  const cos = Math.cos(46.5 * Math.PI / 180);
+  const cos = Math.cos(46.5 * Math.PI / 180), maxKm = z < 7 ? 70 : z < 9 ? 40 : z < 11 ? 15 : z < 13 ? 6 : 3;
   segments.forEach(g => {
-    // Troncons de plus de ~70 km (TGV sans arret) : ligne droite trompeuse, on ne la dessine pas.
-    if (Math.hypot(g[2] - g[0], (g[3] - g[1]) * cos) > .63) return;
+    // Troncon trop long pour le zoom (TGV sans arret, RER direct) : ligne droite trompeuse, on ne la dessine pas.
+    if (Math.hypot(g[2] - g[0], (g[3] - g[1]) * cos) * 111 > maxKm) return;
     const m = (+g[5] || 0) + (g[4] ? 30 * g[6] / g[4] : 0), bad = m >= PROBLEM;
     L.polyline([[g[0], g[1]], [g[2], g[3]]], {renderer: segRenderer, color: heat(m), weight: bad ? w * 1.4 : w,
       opacity: dim ? .12 : bad ? .95 : .55, interactive: false}).addTo(segLayer);
@@ -363,9 +363,11 @@ function drawEvents() {
   evLayer.clearLayers();
   if (!items.length) return;
   const at = new Map(), view = map.getBounds().pad(.2), T = L_();
-  const z = map.getZoom(), sz = z < 8 ? 14 : 18;
+  const z = map.getZoom(), sz = z < 13 ? 14 : 18;
   // Vue large : seulement les perturbations qui interrompent le service ; en zoomant, toutes.
-  visible().filter(x => z >= 8 || x.severity === "bloquant").forEach(x => (x.stops || []).forEach(s => {
+  // Perturbation sur toute une ligne (plus de 4 gares) : une icone aux deux extremites seulement, pas sur chaque arret.
+  const ends = st => st.length > 4 ? [st[0], st[st.length - 1]] : st;
+  visible().filter(x => z >= 8 || x.severity === "bloquant").forEach(x => ends(x.stops || []).forEach(s => {
     if (!s[1] || !s[2] || !view.contains([s[1], s[2]])) return;
     const k = (+s[1]).toFixed(3) + "," + (+s[2]).toFixed(3);
     if (!at.has(k)) at.set(k, {s, xs: []});
