@@ -715,7 +715,12 @@ async function openStation(s) {
   const n = ds.reduce((a, d) => a + d.n, 0);
   ctx.data = {lines: [...byLine.values()], n, late15: ds.reduce((a, d) => a + d.late15, 0), cancelled: ds.reduce((a, d) => a + d.cancelled, 0),
     avg: n ? ds.reduce((a, d) => a + (+d.avg || 0) * d.n, 0) / n : null,
-    metro_next: ds.flatMap(d => d.metro_next || []),
+    // Plusieurs quais / points d'arret pour la meme gare : on fusionne par ligne et direction (3 prochaines rames, doublons < 40 s retires)
+    metro_next: Object.values(ds.flatMap(d => d.metro_next || []).reduce((acc, x) => {
+      const k = x.line_id + "|" + norm(x.dest), g = acc[k] || (acc[k] = {line_id: x.line_id, line: x.line, dest: x.dest, t: []});
+      g.t.push(...x.t); return acc; }, {})).map(g => {
+        const ts = g.t.sort((a, b) => a - b).filter((v, i, arr) => i === 0 || v - arr[i - 1] > 40);
+        return Object.assign(g, {t: ts.slice(0, 3)}); }),
     next: ds.flatMap(d => d.next).sort((a, b) => (a.sched + Math.max(a.delay || 0, 0)) - (b.sched + Math.max(b.delay || 0, 0))).slice(0, 15)};
   L.circleMarker([s.lat, s.lon], {radius: 11, color: css("--blue"), weight: 3, fill: false, interactive: false}).addTo(ctxLayer);
   drawCtx(); drawList(); drawEvents();
