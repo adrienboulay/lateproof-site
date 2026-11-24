@@ -153,6 +153,7 @@ function color(s) {
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 function drawStations() {
   stationLayer.clearLayers();
+  if (!stations.length) return;  // garde les tirets tant qu'aucune donnee n'est arrivee
   const T = L_(), nf = new Intl.NumberFormat(loc());
   stations.forEach(s => {
     L.circleMarker([s.lat, s.lon], {radius: Math.min(3 + Math.sqrt(s.n) * .7, 14), color: color(s), fillColor: color(s), fillOpacity: .75, weight: 1})
@@ -209,6 +210,10 @@ function load() {
   rpc("public_disruptions", {days: 7}).then(d => { items = d.items || []; drawList(); }).catch(() => drawList());
 }
 setLang(lang); load(); setInterval(load, 300000);
+// La carte se cree avant que la mise en page soit stable (polices, grille) : on lui redonne sa vraie taille.
+const fit = () => map.invalidateSize();
+window.addEventListener("load", fit); window.addEventListener("resize", fit); setTimeout(fit, 400);
+if ("ResizeObserver" in window) new ResizeObserver(fit).observe(document.getElementById("map"));
 </script>
 </body>
 </html>
