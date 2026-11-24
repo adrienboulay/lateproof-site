@@ -442,7 +442,7 @@ function drawCtx() {
     const metro = !d.n && d.stops.some(s => s.gap != null), gaps = d.stops.filter(s => s.gap != null).map(s => +s.gap);
     const worst = d.stops.filter(s => s.n >= 5 && s.late15).sort((a, b) => b.late15 / b.n - a.late15 / a.n).slice(0, 3);
     ctxEl.innerHTML = head(T.kLine, esc(lineLabel(l)) + (lineSub(l) ? `<br><small class="hint">${esc(lineSub(l))}</small>` : "")) +
-      (metro ? `<div class="stats"><span><b>${(gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(1)} ${T.min}</b>${T.gap}</span></div>`
+      (metro ? `<div class="stats"><span><b>${new Intl.NumberFormat(loc(), {maximumFractionDigits: 1}).format(gaps.reduce((a, b) => a + b, 0) / gaps.length)} ${T.min}</b>${T.gap}</span></div>`
         : d.n ? `<div class="stats">${stat(d.n, T.trains)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}</div>`
         : `<p class="hint">${T.noData}</p>`) +
       (worst.length ? `<p class="hint">${T.worst} : ${worst.map(s => `${esc(s.name)} (${Math.round(100 * s.late15 / s.n)} %)`).join(", ")}</p>` : "");
