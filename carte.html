@@ -595,10 +595,10 @@ const rpc = (fn, body = {}) => fetch(`${CFG.url}/rest/v1/rpc/${fn}`, {method: "P
 let booted = false;
 function load() {
   if (!CFG.url) { drawList(); return Promise.resolve(); }
-  return Promise.all([
-    rpc("public_station_map").then(d => { stations = d.stations || []; updatedAt = d.updated_at; drawStations(); if (ctx && ctx.type === "region") drawCtx(); }).catch(() => {}),
-    rpc("public_disruptions", {days: 7}).then(d => { items = d.items || []; drawList(); }).catch(() => drawList()),
-    lines.length ? null : rpc("public_lines").then(d => { lines = d || []; }).catch(() => {})]);
+  // Une requete apres l'autre : en parallele, la plus lourde (les gares) depasse parfois le delai de la base.
+  return rpc("public_station_map").then(d => { stations = d.stations || []; updatedAt = d.updated_at; drawStations(); if (ctx && ctx.type === "region") drawCtx(); }).catch(() => {})
+    .then(() => rpc("public_disruptions", {days: 7})).then(d => { items = d.items || []; drawList(); }).catch(() => drawList())
+    .then(() => lines.length ? null : rpc("public_lines").then(d => { lines = d || []; })).catch(() => {});
 }
 // Ouverture : lien partage (#region=, #ligne=, #trajet=) > trajet saisi a l'inscription > region (profil quotidien) > France
 let tries = 0;
