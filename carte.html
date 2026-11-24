@@ -727,7 +727,7 @@ function openLine(l) {
     const lc = official.length ? idfGeo.lines[l.id].color : blue;
     (official.length ? official : ctx.data.paths).forEach(p => { L.polyline(p, {color: lc, weight: 6, opacity: .95}).addTo(ctxLayer); pts.push(...p); });
     ctx.data.stops.forEach(s => { pts.push([s.lat, s.lon]);
-      L.circleMarker([s.lat, s.lon], {radius: 6, color: "#fff", weight: 2, fillColor: s.gap != null ? blue : color(s), fillOpacity: 1})
+      L.circleMarker([s.lat, s.lon], {radius: 6, color: "#fff", weight: 2, fillColor: s.gap != null ? lc : color(s), fillOpacity: 1})
         .bindPopup(`<b>${esc(s.name)}</b><br>` + (s.gap != null ? `${s.gap} ${L_().min} ${L_().gap}` :
           `${nf().format(s.n)} ${L_().pass} · <b>${s.late15}</b> ${L_().late}${s.avg != null ? `<br>${L_().avg} ${s.avg} ${L_().min}` : ""}`)).addTo(ctxLayer); });
     if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(.1));
