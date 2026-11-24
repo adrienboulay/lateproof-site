@@ -25,7 +25,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
-          mkdir -p public && cp index.html public/
+          mkdir -p public && cp index.html carte.html public/
           BASE=$(printf '%s' "$SUPABASE_URL" | sed -E 's#^(https://[^/]+).*#\1#')
           printf 'window.LP_CONFIG = {url: "%s", key: "%s"};\n' "$BASE" "$SUPABASE_PUBLISHABLE_KEY" > public/config.js
           [ -n "$BASE" ] && [ -n "$SUPABASE_PUBLISHABLE_KEY" ] && echo "config ok" || echo "::warning::secrets manquants, la page s'affiche sans inscription"

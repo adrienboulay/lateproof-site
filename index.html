@@ -168,7 +168,7 @@ footer{border-top:1px solid var(--line);padding-block:22px 34px;color:var(--mute
     </div>
 
     <div class="board" aria-live="off">
-      <div class="title"><span data-i18n="boardTitle">Aujourd'hui en France · relevé toutes les 2 min</span><span class="live"><i></i><span id="updated">—</span></span></div>
+      <div class="title"><span data-i18n="boardTitle">Aujourd'hui en France · relevé toutes les 2 min</span><span class="live"><i></i><span id="updated">—</span> · <a href="carte.html" style="color:#8b98ad" data-i18n="mapLink">voir la carte →</a></span></div>
       <div class="v" id="sTrains">—</div><div class="k" data-i18n="sTrains">trains suivis (SNCF + Île-de-France)</div>
       <div class="v amber" id="sLate">—</div><div class="k" data-i18n="sLate">en retard de 15 min ou plus</div>
       <div class="v" id="sCanc">—</div><div class="k" data-i18n="sCanc">supprimés</div>
@@ -245,7 +245,7 @@ const I18N = {
     data:"Data: SNCF open data, Île-de-France Mobilités.",
     ok:"You're on the list! We'll email you on launch day.", dup:"You're already on the list. See you on launch day!",
     bad:"Please check your email address.", noConsent:"Please tick the box so we're allowed to email you.",
-    fail:"Sign-up didn't go through. Please try again in a minute.", sending:"Sending…", updated:"updated"},
+    fail:"Sign-up didn't go through. Please try again in a minute.", mapLink:"see the map →", sending:"Sending…", updated:"updated"},
   fr: {}
 };
 // Les textes francais sont ceux du HTML : on les memorise au chargement.

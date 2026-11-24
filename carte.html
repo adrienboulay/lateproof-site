@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carte des retards · LateProof</title>
+<meta name="description" content="Ponctualité des gares en direct, grèves annoncées et travaux à venir, en France.">
+<meta name="theme-color" content="#2f6bff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Meme identite que la page d'accueil. Mise en page : carte a gauche, « tableau des perturbations » a droite. */
+:root{
+  --bg:#f4f6fa; --surface:#ffffff; --surface2:#e9eef6; --fg:#121823; --muted:#55627a; --line:#d7deea;
+  --blue:#2f6bff; --on-blue:#ffffff; --amber:#a86a00; --mint:#0d8a5f; --red:#c93439;
+  --dot-ok:#11a975; --dot-mid:#f0a000; --dot-bad:#e5484d;
+  --display:"Archivo","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{--bg:#0f1520;--surface:#18212f;--surface2:#243045;--fg:#eef3fa;--muted:#a3afc2;--line:#2c384d;
+  --blue:#6b95ff;--on-blue:#08101f;--amber:#ffb020;--mint:#35d49a;--red:#ff6b70;--dot-ok:#35d49a;--dot-mid:#ffb020;--dot-bad:#ff5a5f;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--display)}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;color:var(--fg);text-decoration:none}
+.brand b{color:var(--blue)}
+.nav{display:flex;align-items:center;gap:12px}
+.nav a{color:var(--muted);font-weight:600;text-decoration:none}.nav a:hover{color:var(--blue)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.lang button{border:0;background:none;color:var(--muted);font:600 .8rem var(--mono);padding:6px 11px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue)}
+h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;line-height:1.1}
+.sub{color:var(--muted);margin:0 0 14px;max-width:46rem}
+.kpis{display:flex;flex-wrap:wrap;gap:8px 22px;margin-bottom:14px;font-size:.92rem;color:var(--muted)}
+.kpis b{font:700 1.15rem var(--mono);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:6px}
+.kpis .late b{color:var(--amber)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;padding-bottom:28px}
+#map{height:min(72vh,720px);min-height:420px;border-radius:14px;border:1px solid var(--line);background:var(--surface2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;max-height:min(72vh,720px)}
+.panel header{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.panel h2{font-size:1.05rem;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:600 .8rem var(--display);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 10px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.list{overflow:auto;padding:6px;display:grid;gap:4px;align-content:start}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;text-align:left;border:1px solid transparent;background:none;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--fg);font:inherit}
+.item:hover,.item.on{background:var(--bg);border-color:var(--line)}
+.tag{font:700 .68rem var(--mono);letter-spacing:.06em;padding:3px 6px;border-radius:5px;align-self:start;text-transform:uppercase}
+.t-greve{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.t-travaux{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.t-incident{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}
+.item .ttl{font-size:.9rem;line-height:1.35;min-width:0;overflow-wrap:anywhere}
+.item .meta{grid-column:2;font:500 .75rem var(--mono);color:var(--muted)}
+.item .sev{color:var(--red);font-weight:700}
+.empty{padding:20px 12px;color:var(--muted);font-size:.9rem}
+.note{font-size:.8rem;color:var(--muted);padding-block:0 30px}
+.leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.panel{max-height:none}.panel .list{max-height:60vh}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a>
+    <nav class="nav"><a href="./#inscription" data-i18n="signup">Préinscription</a>
+      <div class="lang" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true">FR</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></nav>
+  </header>
+
+  <h1 data-i18n="h1">Les retards en direct, et ce qui arrive</h1>
+  <p class="sub" data-i18n="sub">Chaque point est une gare : sa couleur montre la part de trains arrivés avec 15 minutes de retard ou plus aujourd'hui. À droite, les grèves annoncées et les travaux à venir.</p>
+  <div class="kpis" aria-live="polite">
+    <span><b id="kSt">—</b><span data-i18n="kSt">gares suivies</span></span>
+    <span class="late"><b id="kLate">—</b><span data-i18n="kLate">passages à +15 min</span></span>
+    <span><b id="kCanc">—</b><span data-i18n="kCanc">arrêts supprimés</span></span>
+    <span><b id="kUpd">—</b><span data-i18n="kUpd">dernière mise à jour</span></span>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div id="map" role="region" aria-label="Carte des gares"></div>
+      <div class="legend">
+        <span><i style="background:var(--dot-ok)"></i><span data-i18n="l1">moins de 5 % en retard</span></span>
+        <span><i style="background:var(--dot-mid)"></i><span data-i18n="l2">5 à 20 %</span></span>
+        <span><i style="background:var(--dot-bad)"></i><span data-i18n="l3">plus de 20 % ou suppressions</span></span>
+        <span data-i18n="l4">Taille : nombre de passages</span>
+      </div>
+    </div>
+
+    <aside class="panel" aria-labelledby="pTitle">
+      <header>
+        <h2 id="pTitle" data-i18n="pTitle">Perturbations annoncées</h2>
+        <div class="chips" id="kinds" role="group" aria-label="Type">
+          <button type="button" data-k="all" aria-pressed="true" data-i18n="cAll">Tout</button>
+          <button type="button" data-k="greve" aria-pressed="false" data-i18n="cGreve">Grèves</button>
+          <button type="button" data-k="travaux" aria-pressed="false" data-i18n="cTravaux">Travaux</button>
+          <button type="button" data-k="incident" aria-pressed="false" data-i18n="cIncident">Incidents</button>
+        </div>
+        <div class="chips" id="when" role="group" aria-label="Période">
+          <button type="button" data-w="0" aria-pressed="false" data-i18n="wNow">En cours</button>
+          <button type="button" data-w="7" aria-pressed="true" data-i18n="w7">7 prochains jours</button>
+        </div>
+      </header>
+      <div class="list" id="list"><p class="empty" data-i18n="loading">Chargement…</p></div>
+    </aside>
+  </div>
+  <p class="note" data-i18n="note">Sources : données temps réel SNCF et Île-de-France Mobilités enregistrées par LateProof toutes les 2 minutes ; agenda public des grèves (cestlagreve.fr). Chiffres de la journée en cours, heure de Paris.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="config.js"></script>
+<script>
+const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", sub:"Each dot is a station: its colour shows the share of trains arriving 15+ minutes late today. On the right, announced strikes and upcoming works.",
+  kSt:"stations tracked", kLate:"arrivals 15+ min late", kCanc:"cancelled stops", kUpd:"last update", l1:"under 5% late", l2:"5 to 20%", l3:"over 20% or cancellations",
+  l4:"Size: number of arrivals", pTitle:"Announced disruptions", cAll:"All", cGreve:"Strikes", cTravaux:"Works", cIncident:"Incidents",
+  wNow:"Ongoing", w7:"Next 7 days", loading:"Loading…", note:"Sources: SNCF and Île-de-France Mobilités real-time data, recorded by LateProof every 2 minutes; public strike calendar (cestlagreve.fr). Figures for the current day, Paris time.",
+  none:"Nothing announced for this filter.", greve:"strike", travaux:"works", incident:"incident", now:"ongoing", from:"from", to:"to", block:"service stopped",
+  pass:"arrivals", late:"15+ min late", canc:"cancelled", avg:"average delay", min:"min", unavailable:"Live data is not connected yet."};
+const FR = {}; document.querySelectorAll("[data-i18n]").forEach(el => FR[el.dataset.i18n] = el.textContent);
+Object.assign(FR, {none:"Rien d'annoncé pour ce filtre.", greve:"grève", travaux:"travaux", incident:"incident", now:"en cours", from:"du", to:"au",
+  block:"service interrompu", pass:"passages", late:"à +15 min", canc:"supprimés", avg:"retard moyen", min:"min", unavailable:"Les données en direct ne sont pas encore branchées."});
+let lang = "fr"; try { lang = localStorage.getItem("lp-lang") || (navigator.language || "fr").slice(0, 2); } catch (e) {}
+if (lang !== "en") lang = "fr";
+const L_ = () => lang === "en" ? EN : FR;
+const loc = () => lang === "en" ? "en-GB" : "fr-FR";
+function setLang(l) {
+  lang = l; document.documentElement.lang = l;
+  document.querySelectorAll("[data-i18n]").forEach(el => { const v = L_()[el.dataset.i18n]; if (v) el.textContent = v; });
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
+  try { localStorage.setItem("lp-lang", l); } catch (e) {}
+  drawStations(); drawList();
+}
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+// ---------------------------------------------------------------- Carte
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const map = L.map("map", {preferCanvas: true, zoomSnap: .5}).setView([46.6, 2.4], 5.5);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 18, attribution: "&copy; OpenStreetMap"}).addTo(map);
+const stationLayer = L.layerGroup().addTo(map), focusLayer = L.layerGroup().addTo(map);
+let stations = [], items = [], kind = "all", when = 7, updatedAt = null;
+
+function color(s) {
+  const r = s.n ? s.late15 / s.n : 0;
+  if (r > .2 || s.cancelled > 0) return css("--dot-bad");
+  return r >= .05 ? css("--dot-mid") : css("--dot-ok");
+}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+function drawStations() {
+  stationLayer.clearLayers();
+  const T = L_(), nf = new Intl.NumberFormat(loc());
+  stations.forEach(s => {
+    L.circleMarker([s.lat, s.lon], {radius: Math.min(3 + Math.sqrt(s.n) * .7, 14), color: color(s), fillColor: color(s), fillOpacity: .75, weight: 1})
+      .bindPopup(`<b>${esc(s.name)}</b><br>${nf.format(s.n)} ${T.pass} · <b>${nf.format(s.late15)}</b> ${T.late}<br>` +
+        `${s.cancelled ? `${nf.format(s.cancelled)} ${T.canc} · ` : ""}${T.avg} ${s.avg} ${T.min}`).addTo(stationLayer);
+  });
+  const sum = k => stations.reduce((a, s) => a + s[k], 0);
+  document.getElementById("kSt").textContent = nf.format(stations.length);
+  document.getElementById("kLate").textContent = nf.format(sum("late15"));
+  document.getElementById("kCanc").textContent = nf.format(sum("cancelled"));
+  if (updatedAt) document.getElementById("kUpd").textContent = new Date(updatedAt * 1000).toLocaleTimeString(loc(), {hour: "2-digit", minute: "2-digit"});
+}
+
+// ---------------------------------------------------------------- Perturbations
+const fmtDay = t => new Date(t * 1000).toLocaleDateString(loc(), {day: "numeric", month: "short"});
+function visible() {
+  const now = Date.now() / 1000;
+  return items.filter(x => (kind === "all" || x.kind === kind) && x.kind !== "info" &&
+    (when === 7 || ((x.t_start ?? 0) <= now && (x.t_end ?? Infinity) >= now)));
+}
+function drawList() {
+  const T = L_(), list = document.getElementById("list"), v = visible(), now = Date.now() / 1000;
+  if (!v.length) { list.innerHTML = `<p class="empty">${items.length || stations.length ? T.none : T.unavailable}</p>`; return; }
+  list.innerHTML = v.slice(0, 200).map((x, i) => {
+    const on = (x.t_start ?? 0) <= now;
+    const period = on ? T.now + (x.t_end ? ` · ${T.to} ${fmtDay(x.t_end)}` : "") : `${T.from} ${fmtDay(x.t_start)}${x.t_end ? ` ${T.to} ${fmtDay(x.t_end)}` : ""}`;
+    return `<button class="item" type="button" data-i="${items.indexOf(x)}"><span class="tag t-${x.kind}">${T[x.kind] || x.kind}</span>
+      <span class="ttl">${esc(x.title)}</span>
+      <span class="meta">${period}${x.lines ? " · " + esc(x.lines) : ""}${x.severity === "bloquant" ? ` · <span class="sev">${T.block}</span>` : ""}</span></button>`;
+  }).join("");
+}
+document.getElementById("list").addEventListener("click", e => {
+  const b = e.target.closest(".item"); if (!b) return;
+  document.querySelectorAll(".item.on").forEach(x => x.classList.remove("on")); b.classList.add("on");
+  const x = items[+b.dataset.i]; focusLayer.clearLayers();
+  const pts = (x.stops || []).filter(s => s[1] && s[2]);
+  pts.forEach(s => L.circleMarker([s[1], s[2]], {radius: 9, color: css("--red"), weight: 3, fill: false}).bindTooltip(esc(s[0])).addTo(focusLayer));
+  if (pts.length) map.fitBounds(L.latLngBounds(pts.map(s => [s[1], s[2]])).pad(.4), {maxZoom: 11});
+});
+const chips = (id, attr, set) => document.getElementById(id).addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll(`#${id} button`).forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  set(b.dataset[attr]); focusLayer.clearLayers(); drawList();
+});
+chips("kinds", "k", v => kind = v); chips("when", "w", v => when = +v);
+
+// ---------------------------------------------------------------- Donnees (Supabase, fonctions publiques d'agregats)
+const CFG = window.LP_CONFIG || {};
+const rpc = (fn, body = {}) => fetch(`${CFG.url}/rest/v1/rpc/${fn}`, {method: "POST", body: JSON.stringify(body),
+  headers: {apikey: CFG.key, "Content-Type": "application/json"}}).then(r => r.ok ? r.json() : Promise.reject(r.status));
+function load() {
+  if (!CFG.url) { drawList(); return; }
+  rpc("public_station_map").then(d => { stations = d.stations || []; updatedAt = d.updated_at; drawStations(); }).catch(() => {});
+  rpc("public_disruptions", {days: 7}).then(d => { items = d.items || []; drawList(); }).catch(() => drawList());
+}
+setLang(lang); load(); setInterval(load, 300000);
+</script>
+</body>
+</html>
