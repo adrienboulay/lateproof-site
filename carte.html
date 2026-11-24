@@ -373,7 +373,7 @@ function drawStations() {
   }
   // Gares « normales » : petits points discrets (le trace des lignes reste lisible) ; gares en difficulte : plus grosses.
   const small = z < 11 ? 1.8 : z < 13 ? 2.8 : 4.5, big = z < 11 ? 4.5 : z < 13 ? 6 : 7.5;
-  if (z >= 9 || dim) list.forEach(s => {
+  if (z >= 9 && !dim) list.forEach(s => {   // vue ligne ou trajet : seules ses gares sont affichees
     const m = score(s), bad = m != null && m >= PROBLEM;
     const r = bad ? big * (1 + Math.min(m / 20, .6)) : small;
     L.circleMarker([s.lat, s.lon], {radius: r, color: dark ? "#0f1520" : "#ffffff", weight: bad ? 1.5 : .8, fillColor: color(s),
