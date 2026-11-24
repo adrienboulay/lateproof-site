@@ -626,7 +626,7 @@ function drawCtx() {
       (d.n ? `<div class="stats">${stat(d.n, T.pass)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}` +
              (d.avg != null ? `<span><b>${nf1(d.avg)} ${T.min}</b>${T.avg}</span>` : "") + `</div>` : "") +
       // Metro / tram : frequence + prochaines rames ESTIMEES par direction (calculees a partir du flux temps reel)
-      metroIds.map(id => { const l = metro.find(x => x.id === id), mn = (d.metro_next || []).filter(x => x.line_id === id);
+      metroIds.map(id => { const l = metro.find(x => x.id === id), mn = (d.metro_next || []).filter(x => x.line_id === id && norm(x.dest) !== norm(s.name));   // terminus : rames qui arrivent, pas de depart
         const lf = lineFor(id) || {net: "idf", id, name: (l || mn[0] || {}).name || (mn[0] || {}).line, mode: "METRO"};
         return `<div class="metro"><p class="hint">${linePic(lf)} ` + (l ? `${T.every} <b>${nf1(l.gap)} ${T.min}</b>` + (l.planned ? ` (${T.planned} ${nf1(l.planned)} ${T.min})` : "") : "") + `</p>` +
           mn.map(x => `<p class="dir">→ ${esc(x.dest || "")} <span>${x.t.map(ts => { const m = Math.round((ts - now) / 60); return m <= 0 ? T.atQuay : m + " " + T.min; }).join(" · ")}</span></p>`).join("") + `</div>`; }).join("") +
