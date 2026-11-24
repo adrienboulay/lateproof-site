@@ -430,7 +430,7 @@ function drawCtx() {
   ctxEl.hidden = false;
   if (ctx.type === "region") {
     const st = shown().filter(s => inB(ctx.r.b, s.lat, s.lon)), sum = k => st.reduce((a, s) => a + s[k], 0);
-    const worst = st.filter(s => s.n >= 10).sort((a, b) => b.late15 / b.n - a.late15 / a.n).slice(0, 3).filter(s => s.late15);
+    const worst = st.filter(s => s.n >= 20).sort((a, b) => b.late15 / b.n - a.late15 / a.n).slice(0, 3).filter(s => s.late15);
     ctxEl.innerHTML = head(T.kRegion, esc(ctx.r.name)) +
       `<div class="stats">${stat(st.length, T.stTracked)}${stat(sum("late15"), T.lateT, "warn")}${stat(sum("cancelled"), T.cancT, "bad")}</div>` +
       (worst.length ? `<p class="hint">${T.worst} : ${worst.map(s => `${esc(s.name)} (${Math.round(100 * s.late15 / s.n)} %)`).join(", ")}</p>` : "") +
