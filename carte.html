@@ -337,8 +337,8 @@ const netRenderer = L.canvas({pane: "seg"});
 function drawNetwork() {
   segLayer.clearLayers();
   const z = map.getZoom(), dim = dimmed();
-  const grey = dark ? "#5b6b84" : "#8d97a8";
-  rfn.forEach(g => L.polyline(g, {renderer: netRenderer, color: grey, weight: z < 7 ? .7 : z < 10 ? 1.1 : 1.6, opacity: dim ? .25 : .55, interactive: false}).addTo(segLayer));
+  const grey = dark ? "#8796ae" : "#7f8a9c";
+  rfn.forEach(g => L.polyline(g, {renderer: netRenderer, color: grey, weight: z < 7 ? 1 : z < 10 ? 1.3 : 1.8, opacity: dim ? .25 : .75, interactive: false}).addTo(segLayer));
   if (idfGeo && z >= 8) {
     const w = z < 10 ? 2 : z < 12 ? 3 : 4.5;
     idfGeo.shapes.forEach(([code, g]) => { const l = idfGeo.lines[code]; if (!l) return;
@@ -352,10 +352,11 @@ function clusters(list) {
   list.forEach(s => {
     const m = score(s); if (m == null) return;
     const pt = map.project([s.lat, s.lon], z), k = Math.floor(pt.x / cell) + ":" + Math.floor(pt.y / cell);
-    let c = cells.get(k); if (!c) cells.set(k, c = {n: 0, w: 0, lat: 0, lon: 0, sc: 0, st: []});
-    const w = Math.max(s.n, 1); c.n++; c.w += w; c.lat += s.lat * w; c.lon += s.lon * w; c.sc += m * w; c.st.push([m, s]);
+    let c = cells.get(k); if (!c) cells.set(k, c = {n: 0, w: 0, lat: 0, lon: 0, sc: 0, bad: 0, st: []});
+    const w = Math.max(s.n, 1); c.n++; c.w += w; c.lat += s.lat * w; c.lon += s.lon * w; c.sc += m * w; if (m >= PROBLEM) c.bad += w; c.st.push([m, s]);
   });
-  return [...cells.values()].map(c => ({lat: c.lat / c.w, lon: c.lon / c.w, m: c.sc / c.w, n: c.n, w: c.w, st: c.st}));
+  // Couleur : la moyenne seule noie les gares en difficulte ; on prend aussi la part du trafic touchee (30 % touches ~ jaune).
+  return [...cells.values()].map(c => ({lat: c.lat / c.w, lon: c.lon / c.w, avg: c.sc / c.w, m: Math.max(c.sc / c.w, 15 * c.bad / c.w), n: c.n, w: c.w, st: c.st}));
 }
 function drawStations() {
   stationLayer.clearLayers();
@@ -365,8 +366,8 @@ function drawStations() {
     const T = L_();
     clusters(list).forEach(c => {
       const worst = c.st.sort((a, b) => b[0] - a[0]).slice(0, 3).filter(x => x[0] >= PROBLEM);
-      L.circleMarker([c.lat, c.lon], {radius: Math.min(3 + Math.sqrt(c.w) / 5, 15), color: dark ? "#0f1520" : "#ffffff", weight: 1,
-        fillColor: heat(c.m), fillOpacity: .85}).bindPopup(`<b>${nf().format(c.n)} ${T.grp}</b> · ${T.avg} ${nf1(c.m)} ${T.min}` +
+      L.circleMarker([c.lat, c.lon], {radius: Math.min(2.5 + Math.sqrt(c.w) / 8, 11), color: dark ? "#0f1520" : "#ffffff", weight: 1,
+        fillColor: heat(c.m), fillOpacity: .85}).bindPopup(`<b>${nf().format(c.n)} ${T.grp}</b> · ${T.avg} ${nf1(c.avg)} ${T.min}` +
           (worst.length ? `<br>${T.grpWorst} : ` + worst.map(x => esc(x[1].name)).join(", ") : "")).addTo(stationLayer);
     });
   }
