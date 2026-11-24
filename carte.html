@@ -124,6 +124,30 @@ table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
 .saved{display:flex;flex-wrap:wrap;gap:6px}
 .saved button{font:600 .78rem var(--display);border:1px dashed var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 10px;cursor:pointer}
 .metro{display:grid;gap:2px}.dir{margin:0;font-size:.84rem;display:flex;justify-content:space-between;gap:8px}.dir span{font:600 .82rem var(--mono);white-space:nowrap}
+.lblocks{display:grid;gap:10px}
+.lblock{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface)}
+.lhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.lname{display:flex;align-items:center;gap:2px;border:0;background:none;color:var(--fg);font:800 .95rem var(--display);cursor:pointer;padding:0}
+.freq{font-size:.75rem;color:var(--muted);text-align:right}
+.lrow{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px dashed var(--line);font-size:.86rem}
+.lrow .term{min-width:0;overflow-wrap:anywhere}
+.lrow .times{font:600 .8rem var(--mono);white-space:nowrap;text-align:right}
+.lrow .times .d{margin-left:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.tabs button{border:0;background:none;color:var(--muted);font:700 .86rem var(--display);padding:7px 10px;cursor:pointer;border-bottom:3px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--blue)}
+.dep{border-bottom:1px solid var(--line)}
+.dephead{display:grid;grid-template-columns:auto auto 1fr auto;gap:8px;align-items:center;width:100%;border:0;background:none;color:var(--fg);font:inherit;font-size:.86rem;padding:7px 2px;cursor:pointer;text-align:left}
+.dephead .t{font:600 .84rem var(--mono);white-space:nowrap}
+.dephead .chev{transition:transform .15s;color:var(--muted)}
+.dep.open .chev{transform:rotate(180deg)}
+.depbody{padding:2px 2px 10px}
+.issues{margin:4px 0;padding-left:18px;color:var(--red);font-size:.82rem}
+.hint.ok{color:var(--mint)}
+.stops{list-style:none;margin:4px 0 0;padding:0 0 0 10px;border-left:3px solid var(--line);display:grid;gap:2px}
+.stops li{display:grid;grid-template-columns:44px 1fr auto;gap:6px;font-size:.82rem}
+.stops li .t{font:600 .78rem var(--mono);color:var(--muted)}
+.stops li.skip span:nth-child(2){text-decoration:line-through;color:var(--muted)}
 .soon{font-size:.8rem;color:var(--muted);border-left:3px solid var(--blue);padding-left:8px;margin:0}
 .note{font-size:.8rem;color:var(--muted);padding-block:0 30px}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
@@ -213,7 +237,8 @@ const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", su
   profLbl:"My profile", pQ:"Daily commute", pG:"Long distance", pB:"Both", regLbl:"My region", regAll:"All of France", tripBtn:"My trip",
   lg0:"smooth", lg2:"heavily disrupted", lgE:"disruption announced here",
   lgM:"Trains: average delay, trains 15+ min late and cancellations today. Metro, tram: interval between trains vs planned. Click a line or a station for details.",
-  inTrouble:"of traffic disrupted", atQuay:"now", estNote:"Metro and tram times are estimated from live train positions (RATP publishes no timetable).", zoomIn:"Zoom in", nextDep:"Next departures", noNext:"No departure known in real time right now.", metroNoTime:"Metro and tram: no timetable is published, only the frequency.",
+  tabGL:"TGV & Intercités", tabTER:"TER & regional", noHour:"No departure in the next hour.", trainNo:"Train", noTrain:"Details unavailable.",
+  maxDelay:"Up to", skippedStops:"stop(s) cancelled further on", cancelledTrain:"Train cancelled", noIssue:"No problem reported", inTrouble:"of traffic disrupted", atQuay:"now", estNote:"Metro and tram times are estimated from live train positions (RATP publishes no timetable).", zoomIn:"Zoom in", nextDep:"Next departures", noNext:"No departure known in real time right now.", metroNoTime:"Metro and tram: no timetable is published, only the frequency.",
   dest:"Destination", time:"Time", linesHere:"Lines here", kStation2:"Station", lgZ:"Zoomed out: nearby stations are grouped (size = traffic). Zoom in for detail and line routes.", grp:"stations", grpWorst:"most affected",
   bPlan:"Map", bLight:"Light", bDark:"Dark", bOsm:"Detailed (OSM)", every:"a train every", planned:"planned", extra:"extra wait about", metroT:"Metro / tram", pTitle:"Announced disruptions", cAll:"All", cGreve:"Strikes", cTravaux:"Works", cIncident:"Incidents",
   wNow:"Ongoing", w7:"Next 7 days", loading:"Loading…", note:"Sources: SNCF and Île-de-France Mobilités real-time data, recorded by LateProof every 2 minutes; public strike calendar (cestlagreve.fr). Figures for the current day, Paris time. Your profile, region and trips stay in this browser.",
@@ -230,7 +255,8 @@ const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", su
   scopeRegion:" · region", scopeLine:" · this line", scopeTrip:" · this trip", scopeStation:" · this station", noData:"No train recorded on this line today.", loadingCtx:"Loading…"};
 const FR = {}; document.querySelectorAll("[data-i18n]").forEach(el => FR[el.dataset.i18n] = el.textContent);
 FR.qPh = document.getElementById("q").placeholder;
-Object.assign(FR, {atQuay:"à quai", estNote:"Horaires métro et tram estimés d'après la position des rames en temps réel (la RATP ne publie pas d'horaires).", inTrouble:"du trafic perturbé", zoomIn:"Zoomer", nextDep:"Prochains départs", noNext:"Aucun départ connu en temps réel pour l'instant.",
+Object.assign(FR, {tabGL:"TGV & Intercités", tabTER:"TER & régionaux", noHour:"Pas de passage dans l'heure.", trainNo:"Train", noTrain:"Détail indisponible.",
+  maxDelay:"Retard jusqu'à", skippedStops:"arrêt(s) supprimé(s) plus loin", cancelledTrain:"Train supprimé", noIssue:"Aucun problème signalé", atQuay:"à quai", estNote:"Horaires métro et tram estimés d'après la position des rames en temps réel (la RATP ne publie pas d'horaires).", inTrouble:"du trafic perturbé", zoomIn:"Zoomer", nextDep:"Prochains départs", noNext:"Aucun départ connu en temps réel pour l'instant.",
   metroNoTime:"Métro et tram : pas d'horaires publiés, seulement la fréquence.", dest:"Destination", time:"Heure", linesHere:"Lignes", kStation2:"Gare", grp:"gares", grpWorst:"les plus touchées", bPlan:"Plan", bLight:"Clair", bDark:"Sombre", bOsm:"Détaillé (OSM)", every:"une rame toutes les", planned:"prévu",
   extra:"attente en plus d'environ", metroT:"Métro / tram", none:"Rien d'annoncé pour ce filtre.", greve:"grève", travaux:"travaux", incident:"incident", now:"en cours", from:"du", to:"au",
   block:"service interrompu", pass:"passages", late:"à +15 min", canc:"supprimés", avg:"retard moyen", min:"min", unavailable:"Les données en direct ne sont pas encore branchées.",
@@ -591,6 +617,21 @@ function savedHtml() {
     `<button type="button" data-saved="${i}">${esc(t.an)} → ${esc(t.bn)}</button>`).join("")}</div></div>`;
 }
 
+const trainCache = new Map();
+function trainHtml(tr, x) {
+  const T = L_();
+  if (!tr) return `<p class="hint">${T.noTrain}</p>`;
+  const here = (ctx.data && ctx.data.sncfIds) || [], i0 = Math.max(0, tr.stops.findIndex(st => here.includes(st[6])));
+  const after = tr.stops.slice(i0 + 1), skipped = after.filter(st => st[5]).length;
+  const issues = [...(tr.alerts || []).map(a => `<li>${esc(a)}</li>`),
+    (tr.max_delay || 0) >= 300 ? `<li>${T.maxDelay} ${Math.round(tr.max_delay / 60)} ${T.min}</li>` : "",
+    skipped ? `<li>${skipped} ${T.skippedStops}</li>` : "", tr.status === "CANCELED" ? `<li>${T.cancelledTrain}</li>` : ""].join("");
+  return `<p class="hint">${T.trainNo} ${esc(tr.num)} · ${esc(MODES[tr.mode] || tr.mode || "")}${tr.long ? " · " + esc(tr.long) : ""}</p>` +
+    (issues ? `<ul class="issues">${issues}</ul>` : `<p class="hint ok">✓ ${T.noIssue}</p>`) +
+    `<ol class="stops">` + after.map(st => { const ts = st[1] || st[2], dl = st[3] != null ? st[3] : st[4];
+      return `<li class="${st[5] ? "skip" : ""}"><span class="t">${ts ? hhmm(ts) : ""}</span><span>${esc(st[0] || "")}</span>` +
+        `<span>${st[5] ? `<span class="d d-bad">${T.cancelled}</span>` : (dl || 0) >= 60 ? badge(dl, false) : ""}</span></li>`; }).join("") + `</ol>`;
+}
 function drawCtx() {
   const T = L_();
   if (!ctx) { ctxEl.hidden = true; ctxEl.innerHTML = ""; return; }
@@ -614,28 +655,54 @@ function drawCtx() {
         : `<p class="hint">${T.noData}</p>`) +
       (worst.length ? `<p class="hint">${T.worst} : ${worst.map(s => `${esc(s.name)} (${Math.round(100 * s.late15 / s.n)} %)`).join(", ")}</p>` : "");
   } else if (ctx.type === "station") {
-    const s = ctx.s, d = ctx.data, f = nf(), now = Date.now() / 1000;
+    const s = ctx.s, d = ctx.data, now = Date.now() / 1000;
     const hd = head(T.kStation2, esc(s.name));
     if (!d) { ctxEl.innerHTML = hd + `<p class="hint">${T.loadingCtx}</p>`; return; }
-    const pics = d.lines.map(l => { const lf = lineFor(l.id) || {net: l.net, id: l.id, name: l.name, mode: l.mode};
-      return `<button class="btn ghost" type="button" data-line="${esc(l.net + "|" + l.id)}" title="${esc(lineLabel(lf))}">${linePic(lf) || esc(lineLabel(lf))}</button>`; }).join("");
-    const metro = d.lines.filter(l => l.gap != null);
-    const metroIds = [...new Set([...metro.map(l => l.id), ...(d.metro_next || []).map(x => x.line_id)])];
+    const when = (ts, delay, cancelled) => {          // « à quai », « 4 min » (moins d'une heure) ou « 14:32 » + retard
+      if (cancelled) return `<s>${hhmm(ts)}</s> <span class="d d-bad">${T.cancelled}</span>`;
+      const real = ts + Math.max(delay || 0, 0), m = Math.round((real - now) / 60);
+      const lbl = m <= 0 ? T.atQuay : m < 60 ? `${m} ${T.min}` : hhmm(real);
+      return lbl + ((delay || 0) >= 60 ? ` <span class="d ${delay >= 900 ? "d-bad" : delay >= 300 ? "d-mid" : "d-ok"}">+${Math.round(delay / 60)}</span>` : "");
+    };
+    // ---- Lignes urbaines (metro, RER, Transilien, tram) : un bloc par ligne, triees, terminus l'un sous l'autre
+    const ORDER = {METRO: 1, RER: 2, TRANSILIEN: 3, TRAM: 4, FUNI: 5};
+    const natural = (a, b) => String(a).localeCompare(String(b), "fr", {numeric: true});
+    const idfLines = d.lines.filter(l => l.net === "idf").map(l => Object.assign({}, l, {lf: lineFor(l.id) || {net: "idf", id: l.id, name: l.name, mode: l.mode}}));
+    (d.metro_next || []).forEach(x => { if (!idfLines.some(l => l.id === x.line_id))
+      idfLines.push({net: "idf", id: x.line_id, name: x.line, mode: "METRO", lf: lineFor(x.line_id) || {net: "idf", id: x.line_id, name: x.line, mode: "METRO"}}); });
+    idfLines.sort((a, b) => (ORDER[a.lf.mode] || 9) - (ORDER[b.lf.mode] || 9) || natural(a.lf.name, b.lf.name));
+    const blocks = idfLines.map(l => {
+      let rows = (d.metro_next || []).filter(x => x.line_id === l.id && norm(x.dest) !== norm(s.name))
+        .map(x => [x.dest, x.t.map(ts => when(ts, 0, false)).join(" · ")]);
+      if (!rows.length) {   // RER / Transilien : prochains departs (heure prevue + retard), groupes par terminus
+        const by = {};
+        d.next.filter(x => x.net === "idf" && x.line_id === l.id).forEach(x => (by[x.dest || "?"] = by[x.dest || "?"] || []).push(x));
+        rows = Object.entries(by).map(([dest, xs]) => [dest, xs.slice(0, 3).map(x => when(x.sched, x.delay, x.cancelled)).join(" · ")]);
+      }
+      return `<div class="lblock"><div class="lhead"><button class="lname" type="button" data-line="idf|${esc(l.id)}">${linePic(l.lf, true)}<span>${esc(lineLabel(l.lf))}</span></button>` +
+        (l.gap != null ? `<span class="freq">${T.every} ${nf1(l.gap)} ${T.min}</span>` : "") + `</div>` +
+        (rows.length ? rows.map(([dest, times]) => `<div class="lrow"><span class="term">${esc(dest)}</span><span class="times">${times}</span></div>`).join("")
+                     : `<p class="hint">${T.noHour}</p>`) + `</div>`;
+    }).join("");
+    // ---- Grandes lignes SNCF : onglets TGV / TER, chaque depart se deroule (arrets, problemes)
+    const GL = ["OUI", "OGO", "IC", "ICN", "LYR", "ICE", "TGV", "ES", "TGVLYR", "NAV_GL"];
+    const sn = d.next.filter(x => x.net === "sncf"), tabs = {gl: sn.filter(x => GL.includes(x.mode)), ter: sn.filter(x => !GL.includes(x.mode))};
+    if (!ctx.tab) ctx.tab = tabs.gl.length >= tabs.ter.length ? "gl" : "ter";
+    const sncfLines = d.lines.filter(l => l.net === "sncf");
+    const glHtml = (sn.length || sncfLines.length) ? `<div class="gl"><div class="tabs" role="tablist">` +
+      [["gl", T.tabGL], ["ter", T.tabTER]].map(([k, lbl]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${ctx.tab === k}">${lbl} <small>${tabs[k].length}</small></button>`).join("") +
+      `</div>` + (tabs[ctx.tab].length ? tabs[ctx.tab].map(x => {
+        const open = ctx.open === x.num, tr = trainCache.get(x.num);
+        return `<div class="dep${open ? " open" : ""}"><button type="button" class="dephead" data-train="${esc(x.num)}" aria-expanded="${open}">` +
+          `<span class="t">${hhmm(x.sched)}${badge(x.delay, x.cancelled)}</span><span class="lbadge">${esc(MODES[x.mode] || x.mode || "")}</span>` +
+          `<span class="term">${esc(x.dest || "")}</span><span class="chev" aria-hidden="true">▾</span></button>` +
+          (open ? `<div class="depbody">${tr === undefined ? `<p class="hint">${T.loadingCtx}</p>` : trainHtml(tr, x)}</div>` : "") + `</div>`;
+      }).join("") : `<p class="hint">${T.noNext}</p>`) + `</div>` : "";
     ctxEl.innerHTML = hd +
-      (pics ? `<div><p class="hint">${T.linesHere}</p><div class="row">${pics}</div></div>` : "") +
       (d.n ? `<div class="stats">${stat(d.n, T.pass)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}` +
              (d.avg != null ? `<span><b>${nf1(d.avg)} ${T.min}</b>${T.avg}</span>` : "") + `</div>` : "") +
-      // Metro / tram : frequence + prochaines rames ESTIMEES par direction (calculees a partir du flux temps reel)
-      metroIds.map(id => { const l = metro.find(x => x.id === id), mn = (d.metro_next || []).filter(x => x.line_id === id && norm(x.dest) !== norm(s.name));   // terminus : rames qui arrivent, pas de depart
-        const lf = lineFor(id) || {net: "idf", id, name: (l || mn[0] || {}).name || (mn[0] || {}).line, mode: "METRO"};
-        return `<div class="metro"><p class="hint">${linePic(lf)} ` + (l ? `${T.every} <b>${nf1(l.gap)} ${T.min}</b>` + (l.planned ? ` (${T.planned} ${nf1(l.planned)} ${T.min})` : "") : "") + `</p>` +
-          mn.map(x => `<p class="dir">→ ${esc(x.dest || "")} <span>${x.t.map(ts => { const m = Math.round((ts - now) / 60); return m <= 0 ? T.atQuay : m + " " + T.min; }).join(" · ")}</span></p>`).join("") + `</div>`; }).join("") +
-      (metroIds.some(id => (d.metro_next || []).some(x => x.line_id === id)) ? `<p class="hint">${T.estNote}</p>` : "") +
-      `<div><p class="hint">${T.nextDep}</p>` + (d.next.length ? `<table class="trains"><thead><tr><th>${T.time}</th><th>${T.line_}</th><th>${T.dest}</th></tr></thead><tbody>` +
-        d.next.map(x => { const lf = x.line_id && lineFor(x.line_id);
-          return `<tr class="${x.sched + Math.max(x.delay || 0, 0) < now ? "past" : ""}"><td class="t">${hhmm(x.sched)}${badge(x.delay, x.cancelled)}</td>` +
-            `<td>${lf && lf.net === "idf" ? linePic(lf) : esc(MODES[x.mode] || x.mode || "") + " " + esc(x.line || x.num || "")}</td><td>${esc(x.dest || "")}</td></tr>`; }).join("") +
-        `</tbody></table>` : `<p class="hint">${T.noNext}</p>`) + `</div>` +
+      (blocks ? `<div class="lblocks">${blocks}</div>` : "") + glHtml +
+      ((d.metro_next || []).length ? `<p class="hint">${T.estNote}</p>` : "") +
       (s.id ? `<div class="row"><button class="btn" type="button" data-trip="a" data-st="${esc(key(s))}">${T.fromHere}</button>` +
               `<button class="btn" type="button" data-trip="b" data-st="${esc(key(s))}">${T.toHere}</button></div>` : "");
   } else {
@@ -664,6 +731,14 @@ function drawCtx() {
   }
 }
 ctxEl.addEventListener("click", e => {
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { ctx.tab = tab.dataset.tab; ctx.open = null; drawCtx(); return; }
+  const trn = e.target.closest("[data-train]");
+  if (trn) {
+    const num = trn.dataset.train; ctx.open = ctx.open === num ? null : num; drawCtx();
+    if (ctx.open && !trainCache.has(num)) rpc("public_train", {p_num: num}).then(r => { trainCache.set(num, r); drawCtx(); }).catch(() => { trainCache.set(num, null); drawCtx(); });
+    return;
+  }
   const ln = e.target.closest("[data-line]");
   if (ln) { const [net, id] = ln.dataset.line.split("|"); const l = lines.find(x => x.net === net && x.id === id) || lineFor(id); if (l) openLine(l); return; }
   const s = e.target.closest("[data-saved]");
@@ -722,7 +797,8 @@ async function openStation(s) {
       return acc; }, {})).map(g => {
         const ts = g.t.sort((a, b) => a - b).filter((v, i, arr) => i === 0 || v - arr[i - 1] > 40);
         return Object.assign(g, {t: ts.slice(0, 3)}); }),
-    next: ds.flatMap(d => d.next).sort((a, b) => (a.sched + Math.max(a.delay || 0, 0)) - (b.sched + Math.max(b.delay || 0, 0))).slice(0, 15)};
+    sncfIds: ds.filter(d => d.net === "sncf").map(d => d.id),
+    next: ds.flatMap(d => d.next.map(x => Object.assign({net: d.net}, x))).sort((a, b) => (a.sched + Math.max(a.delay || 0, 0)) - (b.sched + Math.max(b.delay || 0, 0))).slice(0, 80)};
   L.circleMarker([s.lat, s.lon], {radius: 11, color: css("--blue"), weight: 3, fill: false, interactive: false}).addTo(ctxLayer);
   drawCtx(); drawList(); drawEvents();
 }
