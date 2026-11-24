@@ -123,6 +123,7 @@ table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
 .d-bad{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
 .saved{display:flex;flex-wrap:wrap;gap:6px}
 .saved button{font:600 .78rem var(--display);border:1px dashed var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 10px;cursor:pointer}
+.metro{display:grid;gap:2px}.dir{margin:0;font-size:.84rem;display:flex;justify-content:space-between;gap:8px}.dir span{font:600 .82rem var(--mono);white-space:nowrap}
 .soon{font-size:.8rem;color:var(--muted);border-left:3px solid var(--blue);padding-left:8px;margin:0}
 .note{font-size:.8rem;color:var(--muted);padding-block:0 30px}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
@@ -212,7 +213,7 @@ const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", su
   profLbl:"My profile", pQ:"Daily commute", pG:"Long distance", pB:"Both", regLbl:"My region", regAll:"All of France", tripBtn:"My trip",
   lg0:"smooth", lg2:"heavily disrupted", lgE:"disruption announced here",
   lgM:"Trains: average delay, trains 15+ min late and cancellations today. Metro, tram: interval between trains vs planned. Click a line or a station for details.",
-  inTrouble:"of traffic disrupted", zoomIn:"Zoom in", nextDep:"Next departures", noNext:"No departure known in real time right now.", metroNoTime:"Metro and tram: no timetable is published, only the frequency.",
+  inTrouble:"of traffic disrupted", atQuay:"now", estNote:"Metro and tram times are estimated from live train positions (RATP publishes no timetable).", zoomIn:"Zoom in", nextDep:"Next departures", noNext:"No departure known in real time right now.", metroNoTime:"Metro and tram: no timetable is published, only the frequency.",
   dest:"Destination", time:"Time", linesHere:"Lines here", kStation2:"Station", lgZ:"Zoomed out: nearby stations are grouped (size = traffic). Zoom in for detail and line routes.", grp:"stations", grpWorst:"most affected",
   bPlan:"Map", bLight:"Light", bDark:"Dark", bOsm:"Detailed (OSM)", every:"a train every", planned:"planned", extra:"extra wait about", metroT:"Metro / tram", pTitle:"Announced disruptions", cAll:"All", cGreve:"Strikes", cTravaux:"Works", cIncident:"Incidents",
   wNow:"Ongoing", w7:"Next 7 days", loading:"Loading…", note:"Sources: SNCF and Île-de-France Mobilités real-time data, recorded by LateProof every 2 minutes; public strike calendar (cestlagreve.fr). Figures for the current day, Paris time. Your profile, region and trips stay in this browser.",
@@ -229,7 +230,7 @@ const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", su
   scopeRegion:" · region", scopeLine:" · this line", scopeTrip:" · this trip", scopeStation:" · this station", noData:"No train recorded on this line today.", loadingCtx:"Loading…"};
 const FR = {}; document.querySelectorAll("[data-i18n]").forEach(el => FR[el.dataset.i18n] = el.textContent);
 FR.qPh = document.getElementById("q").placeholder;
-Object.assign(FR, {inTrouble:"du trafic perturbé", zoomIn:"Zoomer", nextDep:"Prochains départs", noNext:"Aucun départ connu en temps réel pour l'instant.",
+Object.assign(FR, {atQuay:"à quai", estNote:"Horaires métro et tram estimés d'après la position des rames en temps réel (la RATP ne publie pas d'horaires).", inTrouble:"du trafic perturbé", zoomIn:"Zoomer", nextDep:"Prochains départs", noNext:"Aucun départ connu en temps réel pour l'instant.",
   metroNoTime:"Métro et tram : pas d'horaires publiés, seulement la fréquence.", dest:"Destination", time:"Heure", linesHere:"Lignes", kStation2:"Gare", grp:"gares", grpWorst:"les plus touchées", bPlan:"Plan", bLight:"Clair", bDark:"Sombre", bOsm:"Détaillé (OSM)", every:"une rame toutes les", planned:"prévu",
   extra:"attente en plus d'environ", metroT:"Métro / tram", none:"Rien d'annoncé pour ce filtre.", greve:"grève", travaux:"travaux", incident:"incident", now:"en cours", from:"du", to:"au",
   block:"service interrompu", pass:"passages", late:"à +15 min", canc:"supprimés", avg:"retard moyen", min:"min", unavailable:"Les données en direct ne sont pas encore branchées.",
@@ -619,17 +620,22 @@ function drawCtx() {
     const pics = d.lines.map(l => { const lf = lineFor(l.id) || {net: l.net, id: l.id, name: l.name, mode: l.mode};
       return `<button class="btn ghost" type="button" data-line="${esc(l.net + "|" + l.id)}" title="${esc(lineLabel(lf))}">${linePic(lf) || esc(lineLabel(lf))}</button>`; }).join("");
     const metro = d.lines.filter(l => l.gap != null);
+    const metroIds = [...new Set([...metro.map(l => l.id), ...(d.metro_next || []).map(x => x.line_id)])];
     ctxEl.innerHTML = hd +
       (pics ? `<div><p class="hint">${T.linesHere}</p><div class="row">${pics}</div></div>` : "") +
       (d.n ? `<div class="stats">${stat(d.n, T.pass)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}` +
              (d.avg != null ? `<span><b>${nf1(d.avg)} ${T.min}</b>${T.avg}</span>` : "") + `</div>` : "") +
-      metro.map(l => `<p class="hint">${linePic(lineFor(l.id) || {net: "idf", id: l.id, name: l.name, mode: l.mode})} ${T.every} <b>${nf1(l.gap)} ${T.min}</b>` +
-        (l.planned ? ` (${T.planned} ${nf1(l.planned)} ${T.min})` : "") + `</p>`).join("") +
+      // Metro / tram : frequence + prochaines rames ESTIMEES par direction (calculees a partir du flux temps reel)
+      metroIds.map(id => { const l = metro.find(x => x.id === id), mn = (d.metro_next || []).filter(x => x.line_id === id);
+        const lf = lineFor(id) || {net: "idf", id, name: (l || mn[0] || {}).name || (mn[0] || {}).line, mode: "METRO"};
+        return `<div class="metro"><p class="hint">${linePic(lf)} ` + (l ? `${T.every} <b>${nf1(l.gap)} ${T.min}</b>` + (l.planned ? ` (${T.planned} ${nf1(l.planned)} ${T.min})` : "") : "") + `</p>` +
+          mn.map(x => `<p class="dir">→ ${esc(x.dest || "")} <span>${x.t.map(ts => { const m = Math.round((ts - now) / 60); return m <= 0 ? T.atQuay : m + " " + T.min; }).join(" · ")}</span></p>`).join("") + `</div>`; }).join("") +
+      (metroIds.some(id => (d.metro_next || []).some(x => x.line_id === id)) ? `<p class="hint">${T.estNote}</p>` : "") +
       `<div><p class="hint">${T.nextDep}</p>` + (d.next.length ? `<table class="trains"><thead><tr><th>${T.time}</th><th>${T.line_}</th><th>${T.dest}</th></tr></thead><tbody>` +
         d.next.map(x => { const lf = x.line_id && lineFor(x.line_id);
           return `<tr class="${x.sched + Math.max(x.delay || 0, 0) < now ? "past" : ""}"><td class="t">${hhmm(x.sched)}${badge(x.delay, x.cancelled)}</td>` +
             `<td>${lf && lf.net === "idf" ? linePic(lf) : esc(MODES[x.mode] || x.mode || "") + " " + esc(x.line || x.num || "")}</td><td>${esc(x.dest || "")}</td></tr>`; }).join("") +
-        `</tbody></table>` : `<p class="hint">${T.noNext}${metro.length ? " " + T.metroNoTime : ""}</p>`) + `</div>` +
+        `</tbody></table>` : `<p class="hint">${T.noNext}</p>`) + `</div>` +
       (s.id ? `<div class="row"><button class="btn" type="button" data-trip="a" data-st="${esc(key(s))}">${T.fromHere}</button>` +
               `<button class="btn" type="button" data-trip="b" data-st="${esc(key(s))}">${T.toHere}</button></div>` : "");
   } else {
@@ -709,6 +715,7 @@ async function openStation(s) {
   const n = ds.reduce((a, d) => a + d.n, 0);
   ctx.data = {lines: [...byLine.values()], n, late15: ds.reduce((a, d) => a + d.late15, 0), cancelled: ds.reduce((a, d) => a + d.cancelled, 0),
     avg: n ? ds.reduce((a, d) => a + (+d.avg || 0) * d.n, 0) / n : null,
+    metro_next: ds.flatMap(d => d.metro_next || []),
     next: ds.flatMap(d => d.next).sort((a, b) => (a.sched + Math.max(a.delay || 0, 0)) - (b.sched + Math.max(b.delay || 0, 0))).slice(0, 15)};
   L.circleMarker([s.lat, s.lon], {radius: 11, color: css("--blue"), weight: 3, fill: false, interactive: false}).addTo(ctxLayer);
   drawCtx(); drawList(); drawEvents();
