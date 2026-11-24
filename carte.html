@@ -148,6 +148,7 @@ table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
 .stops li{display:grid;grid-template-columns:44px 1fr auto;gap:6px;font-size:.82rem}
 .stops li .t{font:600 .78rem var(--mono);color:var(--muted)}
 .stops li.skip span:nth-child(2){text-decoration:line-through;color:var(--muted)}
+.backbtn{justify-self:start;padding:2px 0;font-size:.82rem}
 .soon{font-size:.8rem;color:var(--muted);border-left:3px solid var(--blue);padding-left:8px;margin:0}
 .note{font-size:.8rem;color:var(--muted);padding-block:0 30px}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
@@ -656,7 +657,8 @@ function drawCtx() {
       (worst.length ? `<p class="hint">${T.worst} : ${worst.map(s => `${esc(s.name)} (${Math.round(100 * s.late15 / s.n)} %)`).join(", ")}</p>` : "");
   } else if (ctx.type === "station") {
     const s = ctx.s, d = ctx.data, now = Date.now() / 1000;
-    const hd = head(T.kStation2, esc(s.name));
+    const hd = (ctx.back ? `<button class="btn ghost backbtn" type="button" data-act="back">← ${ctx.back.type === "line" ? linePic(ctx.back.line) + esc(lineLabel(ctx.back.line)) : T.kTrip}</button>` : "") +
+      head(T.kStation2, esc(s.name || ""));
     if (!d) { ctxEl.innerHTML = hd + `<p class="hint">${T.loadingCtx}</p>`; return; }
     const when = (ts, delay, cancelled) => {          // « à quai », « 4 min » (moins d'une heure) ou « 14:32 » + retard
       if (cancelled) return `<s>${hhmm(ts)}</s> <span class="d d-bad">${T.cancelled}</span>`;
@@ -745,6 +747,7 @@ ctxEl.addEventListener("click", e => {
   if (s) { const t = savedTrips()[+s.dataset.saved], a = findSt(t.a), b = findSt(t.b); if (a && b) openTrip(a, b); return; }
   const act = e.target.closest("[data-act]")?.dataset.act; if (!act) return;
   if (act === "close") setCtx(null);
+  else if (act === "back" && ctx.back) { const b = ctx.back; if (b.type === "line") openLine(b.line); else openTrip(b.a, b.b); }
   else if (act === "share") share();
   else if (act === "myregion") { myRegion = ctx.r.id; store.set("lp-region", myRegion); regionSel.value = myRegion; drawCtx(); }
   else if (act === "swap") { const a = ctx.a, b = ctx.b; if (a && b) openTrip(b, a); else { ctx.a = b; ctx.b = a; drawCtx(); } }
@@ -763,7 +766,7 @@ function setCtx(c) {
   drawNetwork(); drawStations(); drawCtx(); drawList(); drawEvents();
   const h = !c || c.type === "tripform" ? "" : c.type === "region" ? "region=" + c.r.id :
     c.type === "line" ? "ligne=" + encodeURIComponent(c.line.net + "|" + c.line.id) :
-    c.type === "station" ? "gare=" + encodeURIComponent(key(c.s)) : "trajet=" + encodeURIComponent(key(c.a) + ">" + key(c.b));
+    c.type === "station" ? (c.s.id ? "gare=" + encodeURIComponent(key(c.s)) : "") : "trajet=" + encodeURIComponent(key(c.a) + ">" + key(c.b));
   history.replaceState(null, "", h ? "#" + h : location.pathname + location.search);
   setTimeout(() => map.invalidateSize(), 0);
 }
@@ -771,21 +774,29 @@ function near(lat, lon, m) {
   const c = Math.cos(lat * Math.PI / 180);
   return stations.filter(o => Math.hypot((o.lat - lat) * 111000, (o.lon - lon) * 111000 * c) < m);
 }
-function openStationAt(lat, lon, name, code) {
-  const best = near(lat, lon, 250).sort((a, b) => (b.net === "idf") - (a.net === "idf") || b.n - a.n)[0];
-  if (best) return openStation(best);
-  setCtx({type: "station", s: {name, lat, lon}, data: {lines: [{net: "idf", id: code, name: (idfGeo.lines[code] || {}).name, n: 0}], next: [], n: 0}});
-}
+function openStationAt(lat, lon, name) { return openStation({name, lat, lon}); }
 // Meme gare sur plusieurs reseaux : a moins de 250 m, ou a moins de 600 m avec le meme premier mot (Chatelet / Chatelet - Les Halles).
 const firstWord = n => norm(n).split(" ")[0];
-async function openStation(s) {
-  setCtx({type: "station", s, data: null});
-  const w = firstWord(s.name), group = [s, ...near(s.lat, s.lon, 600).filter(o => o !== s &&
-    (near(s.lat, s.lon, 250).includes(o) || firstWord(o.name) === w)).sort((a, b) => b.n - a.n)].slice(0, 5);
+// Ouvre la fiche d'un lieu, quel que soit le point clique (gare, arret de ligne, gare depuis la vue d'une ligne ou d'un trajet).
+// Les quais et gares du meme lieu sont retrouves EN BASE (public_nearby_ids) : la fiche ne depend pas des gares affichees.
+async function openStation(s0) {
+  const back = ctx && (ctx.type === "line" || ctx.type === "trip") ? ctx : (ctx && ctx.type === "station" ? ctx.back : null);
+  const s = Object.assign({}, s0);
+  setCtx({type: "station", s, back, data: null});
+  let found = [];
+  try { found = await rpc("public_nearby_ids", {p_lat: s.lat, p_lon: s.lon, p_name: s.name || ""}); } catch (e) {}
+  if (!ctx || ctx.type !== "station" || ctx.s !== s) return;
+  const group = [...(s.id ? [s] : []), ...found.filter(o => !(o.net === s.net && o.id === s.id))].slice(0, 6);
+  if (!s.id) {   // point sans identifiant (arret de ligne) : on prend la gare connue la plus proche pour le nom, le lien et « Partir d'ici »
+    const known = group.map(g => findSt(g.net + "|" + g.id)).find(Boolean) || group[0];
+    if (known) { s.net = known.net; s.id = known.id; if (!s.name) s.name = known.name; }
+    history.replaceState(null, "", "#gare=" + encodeURIComponent(key(s)));
+  }
   const seen = new Set(), res = await Promise.all(group.filter(o => { const k = key(o); if (seen.has(k)) return false; seen.add(k); return true; })
     .map(o => rpc("public_station", {p_net: o.net, p_id: o.id}).then(d => d && Object.assign(d, {net: o.net})).catch(() => null)));
   if (!ctx || ctx.type !== "station" || ctx.s !== s) return;
   const ds = res.filter(Boolean), byLine = new Map();
+  if (!s.name && ds[0]) s.name = ds[0].name;
   ds.forEach(d => d.lines.forEach(l => { const k = d.net + "|" + l.id; if (!byLine.has(k)) byLine.set(k, Object.assign({net: d.net}, l)); }));
   const n = ds.reduce((a, d) => a + d.n, 0);
   ctx.data = {lines: [...byLine.values()], n, late15: ds.reduce((a, d) => a + d.late15, 0), cancelled: ds.reduce((a, d) => a + d.cancelled, 0),
@@ -817,8 +828,7 @@ function openLine(l) {
     (official.length ? official : ctx.data.paths).forEach(p => { L.polyline(p, {color: lc, weight: 6, opacity: .95}).addTo(ctxLayer); pts.push(...p); });
     ctx.data.stops.forEach(s => { pts.push([s.lat, s.lon]);
       L.circleMarker([s.lat, s.lon], {radius: 6, color: "#fff", weight: 2, fillColor: s.gap != null ? lc : color(s), fillOpacity: 1})
-        .bindPopup(`<b>${esc(s.name)}</b><br>` + (s.gap != null ? `${s.gap} ${L_().min} ${L_().gap}` :
-          `${nf().format(s.n)} ${L_().pass} · <b>${s.late15}</b> ${L_().late}${s.avg != null ? `<br>${L_().avg} ${s.avg} ${L_().min}` : ""}`)).addTo(ctxLayer); });
+        .bindTooltip(esc(s.name), {direction: "top"}).on("click", () => openStation({name: s.name, lat: s.lat, lon: s.lon})).addTo(ctxLayer); });
     if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(.1));
   }).catch(() => { ctx.data = {stops: [], paths: [], n: 0}; drawCtx(); });
 }
@@ -845,7 +855,7 @@ async function openTrip(a, b) {
   if (path.length > 1) {
     L.polyline(path, {color: red, weight: 5, opacity: .85}).addTo(ctxLayer);
     ctx.data.path.forEach((p, i) => L.circleMarker([p[1], p[2]], {radius: i === 0 || i === path.length - 1 ? 7 : 4, color: "#fff", weight: 2,
-      fillColor: red, fillOpacity: 1}).bindTooltip(esc(p[0])).addTo(ctxLayer));
+      fillColor: red, fillOpacity: 1}).bindTooltip(esc(p[0])).on("click", () => openStation({name: p[0], lat: p[1], lon: p[2]})).addTo(ctxLayer));
     ctx.bounds = L.latLngBounds(path).pad(.15); map.fitBounds(ctx.bounds);
   } else {
     ctx.bounds = L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]).pad(.2); map.fitBounds(ctx.bounds);
