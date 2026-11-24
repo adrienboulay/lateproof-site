@@ -13,11 +13,10 @@ concurrency:
   group: pages
   cancel-in-progress: true
 jobs:
-  deploy:
+  # Deux etapes (modele officiel GitHub) : construire l'archive du site, PUIS la publier.
+  # En une seule etape, la publication ne trouvait parfois pas l'archive (« No artifacts named github-pages »).
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Generer config.js
@@ -36,5 +35,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: public
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
