@@ -275,7 +275,8 @@ REGIONS.forEach(r => regionSel.add(new Option(r.name, r.id)));
 // ================================================================= Carte
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const dark = matchMedia("(prefers-color-scheme: dark)").matches;
-const map = L.map("map", {preferCanvas: true, zoomSnap: .5}).setView([46.6, 2.4], 5.5);
+// Un seul calque de dessin pour lignes + gares : sinon le calque du dessus capte tous les clics.
+const map = L.map("map", {preferCanvas: true, renderer: L.canvas({tolerance: 5}), zoomSnap: .5}).setView([46.6, 2.4], 5.5);
 // Fonds de carte (sans cle). Par defaut « Plan » (Esri World Street Map) : lisible comme un plan type Google (rues, quartiers,
 // reperes), sans relief ni satellite. En option : gris clair, gris sombre (fond + noms des lieux), ou OpenStreetMap detaille.
 const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/", EATTR = "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap";
@@ -338,7 +339,7 @@ function popup(s) {
             `<button class="btn" type="button" data-trip="b" data-st="${esc(s.net + "|" + s.id)}">${T.toHere}</button></div>` : "");
 }
 const dimmed = () => ctx && (ctx.type === "line" || ctx.type === "trip");
-const canvasClick = L.canvas({pane: "seg", tolerance: 6});
+const canvasClick = map.options.renderer;   // lignes IDF et arrets cliquables, sous les gares (ordre de dessin)
 // Fond de reseau : voies reelles du reseau ferre national (gris) + traces officiels des lignes d'Ile-de-France (couleurs des plans).
 const netRenderer = L.canvas({pane: "seg"});
 function lineFor(code) {
@@ -362,7 +363,7 @@ function drawNetwork() {
   if (z >= 11 && !dim && idfGeo.stops) {
     const r = z < 13 ? 2.4 : z < 15 ? 3.4 : 4.5;
     Object.entries(idfGeo.stops).forEach(([code, st]) => { const l = idfGeo.lines[code]; if (!l || (l.mode === "TRAM" && z < 12)) return;
-      st.forEach(([la, lo, name]) => L.circleMarker([la, lo], {renderer: canvasClick, radius: r, color: l.color, weight: 1.5, fillColor: "#ffffff", fillOpacity: 1,
+      st.forEach(([la, lo, name]) => L.circleMarker([la, lo], {renderer: canvasClick, radius: r, color: "#ffffff", weight: 1.2, fillColor: l.color, fillOpacity: 1,
         bubblingMouseEvents: false}).bindTooltip(esc(name), {direction: "top"}).on("click", () => openStationAt(la, lo, name, code)).addTo(segLayer)); });
   }
 }
@@ -694,9 +695,12 @@ function openStationAt(lat, lon, name, code) {
   if (best) return openStation(best);
   setCtx({type: "station", s: {name, lat, lon}, data: {lines: [{net: "idf", id: code, name: (idfGeo.lines[code] || {}).name, n: 0}], next: [], n: 0}});
 }
+// Meme gare sur plusieurs reseaux : a moins de 250 m, ou a moins de 600 m avec le meme premier mot (Chatelet / Chatelet - Les Halles).
+const firstWord = n => norm(n).split(" ")[0];
 async function openStation(s) {
   setCtx({type: "station", s, data: null});
-  const group = [s, ...near(s.lat, s.lon, 250).filter(o => o !== s)].slice(0, 4);
+  const w = firstWord(s.name), group = [s, ...near(s.lat, s.lon, 600).filter(o => o !== s &&
+    (near(s.lat, s.lon, 250).includes(o) || firstWord(o.name) === w)).sort((a, b) => b.n - a.n)].slice(0, 5);
   const seen = new Set(), res = await Promise.all(group.filter(o => { const k = key(o); if (seen.has(k)) return false; seen.add(k); return true; })
     .map(o => rpc("public_station", {p_net: o.net, p_id: o.id}).then(d => d && Object.assign(d, {net: o.net})).catch(() => null)));
   if (!ctx || ctx.type !== "station" || ctx.s !== s) return;
