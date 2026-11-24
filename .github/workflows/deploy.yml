@@ -30,7 +30,7 @@ jobs:
           printf 'window.LP_CONFIG = {url: "%s", key: "%s"};\n' "$BASE" "$SUPABASE_PUBLISHABLE_KEY" > public/config.js
           [ -n "$BASE" ] && [ -n "$SUPABASE_PUBLISHABLE_KEY" ] && echo "config ok" || echo "::warning::secrets manquants, la page s'affiche sans inscription"
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: public
       - id: deployment
