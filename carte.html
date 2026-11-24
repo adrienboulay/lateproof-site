@@ -67,13 +67,13 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted);margin-top:8px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;max-height:min(74vh,740px)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;max-height:min(74vh,740px);overflow:auto}
 .panel>header{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:10px}
 .panel h2{font-size:1.05rem;margin:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips button{font:600 .8rem var(--display);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 10px;cursor:pointer}
 .chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.list{overflow:auto;padding:6px;display:grid;gap:4px;align-content:start;min-height:0}
+.list{padding:6px;display:grid;gap:4px;align-content:start}
 .item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;text-align:left;border:1px solid transparent;background:none;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--fg);font:inherit}
 .item:hover,.item.on{background:var(--bg);border-color:var(--line)}
 .tag{font:700 .68rem var(--mono);letter-spacing:.06em;padding:3px 6px;border-radius:5px;align-self:start;text-transform:uppercase}
@@ -86,7 +86,7 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
 .empty{padding:20px 12px;color:var(--muted);font-size:.9rem;margin:0}
 
 /* Carte de contexte : region, ligne ou trajet selectionne */
-.ctx{border-bottom:1px solid var(--line);padding:14px;display:grid;gap:10px;background:color-mix(in srgb,var(--blue) 5%,var(--surface));border-radius:14px 14px 0 0;overflow:auto;max-height:52%}
+.ctx{border-bottom:1px solid var(--line);padding:14px;display:grid;gap:10px;background:color-mix(in srgb,var(--blue) 5%,var(--surface));border-radius:14px 14px 0 0}
 .ctx-head{display:flex;align-items:flex-start;gap:8px}
 .ctx-head h3{margin:0;font-size:1.1rem;line-height:1.25;flex:1;min-width:0;overflow-wrap:anywhere}
 .ctx-head .kind{display:block;font:700 .66rem var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
@@ -115,7 +115,7 @@ table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
 .leaflet-popup-content .btn{margin-top:6px;padding:5px 9px;font-size:.78rem}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;font-size:.88rem;z-index:2000}
-@media (max-width:980px){.layout{grid-template-columns:1fr}.panel{max-height:none}.panel .list{max-height:60vh}.ctx{max-height:none}}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.panel{max-height:none;overflow:visible}}
 </style>
 </head>
 <body>
@@ -284,7 +284,7 @@ function drawStations() {
   const dim = ctx && (ctx.type === "line" || ctx.type === "trip"), f = nf(), list = shown();
   list.forEach(s => {
     L.circleMarker([s.lat, s.lon], {radius: Math.min(3 + Math.sqrt(s.n) * .7, 14), color: color(s), fillColor: color(s),
-      fillOpacity: dim ? .15 : .75, opacity: dim ? .25 : 1, weight: 1}).bindPopup(() => popup(s)).addTo(stationLayer);
+      fillOpacity: dim ? .07 : .75, opacity: dim ? .12 : 1, weight: 1}).bindPopup(() => popup(s)).addTo(stationLayer);
   });
   const sum = k => list.reduce((a, s) => a + s[k], 0);
   document.getElementById("kSt").textContent = f.format(list.length);
