@@ -601,8 +601,12 @@ function load() {
     lines.length ? null : rpc("public_lines").then(d => { lines = d || []; }).catch(() => {})]);
 }
 // Ouverture : lien partage (#region=, #ligne=, #trajet=) > trajet saisi a l'inscription > region (profil quotidien) > France
+let tries = 0;
 function boot() {
-  if (booted) return; booted = true;
+  if (booted) return;
+  // Les gares (et les lignes) sont necessaires pour ouvrir un lien : si elles ne sont pas arrivees, on reessaie.
+  if ((!stations.length || !lines.length) && CFG.url && tries++ < 4) { setTimeout(() => load().then(boot), 2500 * tries); return; }
+  booted = true;
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("region")) return openRegion(h.get("region"));
   if (h.get("ligne")) { const [net, id] = h.get("ligne").split("|"); const l = lines.find(x => x.net === net && x.id === id); if (l) return openLine(l); }
