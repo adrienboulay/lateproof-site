@@ -10,7 +10,9 @@ Sorties (dans le dossier du site) :
   data/rfn.json          [[[lat, lon], ...], ...]   (voies simplifiees a ~150 m, pour la vue large)
   pictos/<code>.png      pictogrammes officiels reduits a 48 px de haut
 
-Usage : python tools/build_geo.py <idf.geojson> <rfn.geojson>
+Usage : python tools/build_geo.py <idf.geojson> <rfn.geojson> [arrets.json]
+  arrets.json : export du jeu « Arrets et lignes associees » (IDFM) filtre sur metro, tram, RER, Transilien, funiculaire, cable
+                -> ajoute stops: {C01742: [[lat, lon, nom], ...]} (une entree par nom d'arret et par ligne)
 """
 import gzip, io, json, os, sys, urllib.request
 from PIL import Image
@@ -55,7 +57,7 @@ def latlon(coords, eps, nd):
     return [[round(a, nd), round(b, nd)] for a, b in pts]
 
 
-def main(idf_path, rfn_path):
+def main(idf_path, rfn_path, stops_path=None):
     os.makedirs(os.path.join(SITE, "data"), exist_ok=True)
     os.makedirs(os.path.join(SITE, "pictos"), exist_ok=True)
     # ---------------- Ile-de-France : traces, couleurs, pictogrammes
@@ -81,7 +83,16 @@ def main(idf_path, rfn_path):
             lines[code]["picto"] = f"pictos/{code}.png"
         except Exception as ex:
             print("picto introuvable", code, ex)
-    json.dump({"source": "Ile-de-France Mobilites, traces du reseau ferre (Licence Ouverte v2.0)", "lines": lines, "shapes": shapes},
+    stops = {}
+    if stops_path:
+        acc = {}
+        for r in load(stops_path):
+            code = (r.get("id") or "").replace("IDFM:", "")
+            if code not in lines or not r.get("stop_lat"): continue
+            a = acc.setdefault(code, {}).setdefault(r["stop_name"], [0.0, 0.0, 0])
+            a[0] += float(r["stop_lat"]); a[1] += float(r["stop_lon"]); a[2] += 1
+        stops = {c: [[round(a[0] / a[2], 5), round(a[1] / a[2], 5), n] for n, a in d.items()] for c, d in acc.items()}
+    json.dump({"source": "Ile-de-France Mobilites, traces du reseau ferre (Licence Ouverte v2.0)", "lines": lines, "shapes": shapes, "stops": stops},
               open(os.path.join(SITE, "data", "lignes-idf.json"), "w", encoding="utf-8"), separators=(",", ":"), ensure_ascii=False)
     # ---------------- France : voies du reseau ferre national (vue large)
     rfn = []
@@ -92,8 +103,8 @@ def main(idf_path, rfn_path):
     json.dump(rfn, open(os.path.join(SITE, "data", "rfn.json"), "w", encoding="utf-8"), separators=(",", ":"))
     for n in ("data/lignes-idf.json", "data/rfn.json"):
         print(n, os.path.getsize(os.path.join(SITE, n)) // 1000, "ko")
-    print(len(lines), "lignes IDF,", len(shapes), "traces,", sum(1 for l in lines.values() if l.get("picto")), "pictogrammes ;", len(rfn), "troncons RFN")
+    print(len(lines), "lignes IDF,", len(shapes), "traces,", sum(len(v) for v in stops.values()), "arrets,", sum(1 for l in lines.values() if l.get("picto")), "pictogrammes ;", len(rfn), "troncons RFN")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(*sys.argv[1:4])
