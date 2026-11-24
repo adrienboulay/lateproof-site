@@ -371,12 +371,13 @@ function drawStations() {
           (worst.length ? `<br>${T.grpWorst} : ` + worst.map(x => esc(x[1].name)).join(", ") : "")).addTo(stationLayer);
     });
   }
-  const base = z < 11 ? 3.5 : z < 13 ? 5 : 6.5;
+  // Gares « normales » : petits points discrets (le trace des lignes reste lisible) ; gares en difficulte : plus grosses.
+  const small = z < 11 ? 1.8 : z < 13 ? 2.8 : 4.5, big = z < 11 ? 4.5 : z < 13 ? 6 : 7.5;
   if (z >= 9 || dim) list.forEach(s => {
     const m = score(s), bad = m != null && m >= PROBLEM;
-    const r = base * (bad ? 1 + Math.min(m / 15, .8) : 1);
-    L.circleMarker([s.lat, s.lon], {radius: r, color: dark ? "#0f1520" : "#ffffff", weight: z >= 10 ? 1.5 : .6, fillColor: color(s),
-      fillOpacity: dim ? .1 : .95, opacity: dim ? .1 : .9}).bindPopup(() => popup(s)).addTo(stationLayer);
+    const r = bad ? big * (1 + Math.min(m / 20, .6)) : small;
+    L.circleMarker([s.lat, s.lon], {radius: r, color: dark ? "#0f1520" : "#ffffff", weight: bad ? 1.5 : .8, fillColor: color(s),
+      fillOpacity: dim ? .1 : bad ? .95 : .85, opacity: dim ? .1 : .9}).bindPopup(() => popup(s)).addTo(stationLayer);
   });
   const trains = list.filter(s => s.kind !== "metro"), sum = k => trains.reduce((a, s) => a + s[k], 0);
   document.getElementById("kSt").textContent = f.format(list.length);
