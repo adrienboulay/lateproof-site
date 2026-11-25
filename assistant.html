@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Copilote · LateProof</title>
+<meta name="description" content="Pose ta question à l'écrit ou à la voix : retards en direct, prochains trains, plan B et tes droits en cas de retard.">
+<meta name="theme-color" content="#2f6bff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f4f6fa; --surface:#ffffff; --surface2:#e9eef6; --fg:#121823; --muted:#55627a; --line:#d7deea;
+  --blue:#2f6bff; --on-blue:#ffffff; --amber:#a86a00; --amber-bg:#fff7e0; --red:#c93439;
+  --display:"Archivo","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1520;--surface:#18212f;--surface2:#243045;--fg:#eef3fa;--muted:#a3afc2;--line:#2c384d;
+  --blue:#6b95ff;--on-blue:#08101f;--amber:#ffb020;--amber-bg:#2a2210;--red:#ff6b70;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--display)}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;color:var(--fg);text-decoration:none}
+.brand b{color:var(--blue)}
+.nav{display:flex;align-items:center;gap:14px}
+.nav a{color:var(--muted);font-weight:600;text-decoration:none}.nav a:hover{color:var(--blue)}
+.nav a[aria-current="page"]{color:var(--fg)}
+h1{font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.03em;margin:8px 0 6px;line-height:1.1}
+.sub{color:var(--muted);margin:0 0 14px}
+.beta{background:var(--amber-bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--amber) 35%,transparent);border-radius:12px;padding:10px 14px;font-size:.88rem;margin-bottom:14px}
+.beta b{color:var(--amber)}
+.field{display:grid;gap:4px;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:12px}
+.field input{font:500 1rem var(--display);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+
+.chat{display:flex;flex-direction:column;gap:10px;min-height:220px;padding:4px 0 12px}
+.msg{max-width:88%;padding:11px 14px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.user{align-self:flex-end;background:var(--blue);color:var(--on-blue);border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.err{border-color:var(--red)}
+.msg .meta{display:block;margin-top:6px;font:500 .72rem var(--mono);color:var(--muted)}
+.msg.bot .say{margin-top:6px;border:0;background:none;color:var(--muted);font:600 .8rem var(--display);padding:4px 0;cursor:pointer}
+.msg.bot .say:hover{color:var(--blue)}
+.typing{display:inline-flex;gap:4px}.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:8px 13px;font:500 .9rem var(--display);cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+
+.composer{position:sticky;bottom:0;background:var(--bg);padding:10px 0 max(14px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.row{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;min-width:0;resize:none;font:400 1rem/1.4 var(--display);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 13px;max-height:140px}
+.icon{flex:none;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);display:grid;place-items:center;cursor:pointer}
+.icon.send{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.icon:disabled{opacity:.45;cursor:default}
+.icon.mic[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--red) 50%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.icon.mic[aria-pressed="true"],.typing i{animation:none}}
+.opts{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:8px;font-size:.85rem;color:var(--muted)}
+.opts label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.opts button{border:0;background:none;color:var(--muted);font:600 .85rem var(--display);cursor:pointer;padding:0}
+.opts button:hover{color:var(--blue)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a>
+    <nav class="nav"><a href="carte.html">Carte</a><a href="assistant.html" aria-current="page">Copilote</a></nav>
+  </header>
+
+  <h1>Ton copilote de trajet</h1>
+  <p class="sub">Demande-lui à l'écrit ou à la voix : le retard de ton train, le prochain départ, un plan B, tes droits. Il répond avec les données relevées en direct.</p>
+  <p class="beta"><b>Version d'essai gratuite.</b> Les questions sont traitées par Mistral AI (Europe) et peuvent servir à améliorer ses modèles : n'écris pas d'informations personnelles.</p>
+
+  <label class="field">Ton trajet habituel (facultatif, reste sur ton appareil)
+    <input id="trajet" type="text" maxlength="120" placeholder="ex. Lyon Part-Dieu → Grenoble, ou RER B Gare du Nord → Massy" autocomplete="off">
+  </label>
+
+  <div id="chat" class="chat" aria-live="polite"></div>
+  <div id="chips" class="chips" aria-label="Exemples de questions"></div>
+
+  <div class="composer">
+    <form id="form" class="row" autocomplete="off">
+      <label for="q" class="sr">Ta question</label>
+      <textarea id="q" rows="1" maxlength="1000" placeholder="Pose ta question…"></textarea>
+      <button id="mic" class="icon mic" type="button" aria-pressed="false" aria-label="Parler" title="Parler">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button id="send" class="icon send" type="submit" aria-label="Envoyer" title="Envoyer">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z" fill="currentColor"/></svg>
+      </button>
+    </form>
+    <div class="opts">
+      <label><input id="speak" type="checkbox"> Lire les réponses à voix haute</label>
+      <button id="reset" type="button">Nouvelle conversation</button>
+    </div>
+    <p id="micNote" class="opts" hidden>La dictée vocale n'est pas disponible dans ce navigateur : essaie Chrome, Edge ou Safari.</p>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const CFG = window.LP_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+const chat = $("chat"), q = $("q"), form = $("form"), mic = $("mic"), send = $("send"), speakBox = $("speak"), trajetIn = $("trajet");
+const store = {   // confort uniquement : tout marche si le navigateur bloque le stockage
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+// ---------------------------------------------------------------- conversation
+let history = (store.get("lp-chat") || []).slice(-20);
+let busy = false;
+const SUGGESTIONS = [
+  "Mon trajet habituel est-il perturbé ?",
+  "Prochains départs à Gare de Lyon",
+  "Le RER B est-il à l'heure aujourd'hui ?",
+  "Y a-t-il des grèves cette semaine ?",
+  "Mon TGV a 1 h de retard, quels sont mes droits ?",
+];
+
+function bubble(role, text, opts = {}) {
+  const d = document.createElement("div");
+  d.className = `msg ${role === "user" ? "user" : "bot"}${opts.err ? " err" : ""}`;
+  d.textContent = text;                       // jamais de HTML venant du modele
+  if (role !== "user" && !opts.typing && canSpeak) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "say"; b.textContent = "▶ Écouter";
+    b.addEventListener("click", () => say(text));
+    d.appendChild(document.createElement("br")); d.appendChild(b);
+  }
+  chat.appendChild(d);
+  d.scrollIntoView({block: "nearest", behavior: "smooth"});
+  return d;
+}
+function typing() {
+  const d = document.createElement("div");
+  d.className = "msg bot"; d.setAttribute("aria-label", "Le copilote réfléchit");
+  d.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+  chat.appendChild(d); d.scrollIntoView({block: "nearest"});
+  return d;
+}
+function renderAll() {
+  chat.textContent = "";
+  if (!history.length) bubble("bot", "Bonjour ! Je suis ton copilote de trajet. Dis-moi où tu vas ou quelle ligne tu prends, je regarde l'état du trafic en direct.");
+  history.forEach((m) => bubble(m.role, m.content));
+  $("chips").hidden = history.length > 0;
+}
+$("chips").append(...SUGGESTIONS.map((s) => {
+  const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = s;
+  b.addEventListener("click", () => ask(s)); return b;
+}));
+
+async function ask(text) {
+  text = (text || "").trim();
+  if (!text || busy) return;
+  stopSpeaking();
+  busy = true; send.disabled = true;
+  history.push({role: "user", content: text});
+  $("chips").hidden = true;
+  bubble("user", text);
+  q.value = ""; grow();
+  const wait = typing();
+  let answer, err = false;
+  try {
+    if (!CFG.url) throw new Error("hors ligne");
+    const r = await fetch(`${CFG.url}/functions/v1/assistant`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json", apikey: CFG.key},
+      body: JSON.stringify({messages: history.slice(-12), trajet: trajetIn.value.trim()}),
+    });
+    const j = await r.json().catch(() => ({}));
+    answer = j.reply || "Je n'ai pas pu répondre, réessaie dans un instant.";
+    err = !r.ok;
+  } catch (e) {
+    answer = "Je n'arrive pas à joindre le copilote. Vérifie ta connexion et réessaie.";
+    err = true;
+  }
+  wait.remove();
+  bubble("bot", answer, {err});
+  if (!err) { history.push({role: "assistant", content: answer}); store.set("lp-chat", history.slice(-20)); }
+  else history.pop();                          // la question pourra etre reposee
+  if (speakBox.checked && !err) say(answer);
+  busy = false; send.disabled = false;
+}
+
+form.addEventListener("submit", (e) => { e.preventDefault(); ask(q.value); });
+q.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(q.value); } });
+function grow() { q.style.height = "auto"; q.style.height = Math.min(q.scrollHeight, 140) + "px"; }
+q.addEventListener("input", grow);
+$("reset").addEventListener("click", () => { stopSpeaking(); history = []; store.set("lp-chat", null); renderAll(); q.focus(); });
+
+trajetIn.value = store.get("lp-trajet") || store.get("lp-line") || "";
+trajetIn.addEventListener("change", () => store.set("lp-trajet", trajetIn.value.trim() || null));
+
+// ---------------------------------------------------------------- voix : synthese du navigateur (gratuite)
+const canSpeak = "speechSynthesis" in window;
+let voice = null;
+function pickVoice() {
+  const fr = speechSynthesis.getVoices().filter((v) => /^fr(-|_|$)/i.test(v.lang));
+  // Les voix « naturelles » (Edge, Chrome, Safari) d'abord, sinon la premiere voix francaise.
+  voice = fr.find((v) => /natural|online|google|amélie|amelie|audrey|thomas|denise|henri/i.test(v.name)) || fr[0] || null;
+}
+if (canSpeak) { pickVoice(); speechSynthesis.addEventListener?.("voiceschanged", pickVoice); }
+else speakBox.closest("label").hidden = true;
+function say(text) {
+  if (!canSpeak) return;
+  stopSpeaking();
+  const u = new SpeechSynthesisUtterance(text.replace(/[*_#`>]/g, "").replace(/(\d+)h(\d\d)/g, "$1 heures $2"));
+  u.lang = "fr-FR"; if (voice) u.voice = voice; u.rate = 1.05;
+  speechSynthesis.speak(u);
+}
+function stopSpeaking() { if (canSpeak) speechSynthesis.cancel(); }
+speakBox.checked = store.get("lp-speak") === true;
+speakBox.addEventListener("change", () => { store.set("lp-speak", speakBox.checked); if (!speakBox.checked) stopSpeaking(); });
+
+// ---------------------------------------------------------------- micro : reconnaissance vocale du navigateur (gratuite)
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+if (!SR) { mic.hidden = true; $("micNote").hidden = false; }
+mic.addEventListener("click", () => {
+  if (listening) { rec && rec.stop(); return; }
+  stopSpeaking();
+  rec = new SR();
+  rec.lang = "fr-FR"; rec.interimResults = true; rec.continuous = false;
+  let finalText = "";
+  rec.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript;
+    }
+    q.value = (finalText + interim).trim(); grow();
+  };
+  rec.onerror = (e) => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") bubble("bot", "Le micro est bloqué : autorise-le dans ton navigateur pour parler au copilote.", {err: true});
+  };
+  rec.onend = () => {
+    listening = false; mic.setAttribute("aria-pressed", "false"); mic.setAttribute("aria-label", "Parler");
+    if (finalText.trim()) {
+      // Qui parle veut sans doute entendre la reponse : on active la lecture (modifiable).
+      if (canSpeak && store.get("lp-speak") !== false) { speakBox.checked = true; store.set("lp-speak", true); }
+      ask(finalText);
+    }
+  };
+  try { rec.start(); listening = true; mic.setAttribute("aria-pressed", "true"); mic.setAttribute("aria-label", "Arrêter d'écouter"); }
+  catch (e) { listening = false; }
+});
+
+renderAll();
+</script>
+</body>
+</html>
