@@ -25,7 +25,58 @@
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--display)}
 .wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 :focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:8px}
+/* Page plein ecran facon Google Maps : la carte occupe tout, les menus flottent dessus et ne s'ouvrent qu'a la demande. */
+html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app{position:relative;flex:1;min-height:0}
+.side{position:absolute;z-index:1000;top:12px;left:12px;width:min(400px,calc(100% - 24px));max-height:calc(100% - 24px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.side>*{pointer-events:auto}
+.searchbar{display:flex;align-items:center;gap:2px;background:var(--surface);border-radius:999px;box-shadow:0 2px 6px rgb(0 0 0/.18),0 1px 2px rgb(0 0 0/.12);padding:3px 4px}
+.searchbar .combo{flex:1;min-width:0}
+.searchbar input{width:100%;border:0;background:none;font:500 1rem var(--display);color:var(--fg);padding:10px 6px;outline:none}
+.searchbar .sugg{top:calc(100% + 10px);left:-50px;right:-48px}
+.ib{width:42px;height:42px;flex:none;border:0;border-radius:50%;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.ib:hover{background:var(--bg);color:var(--fg)}
+.ib.dir{color:var(--blue)}
+.ib[aria-expanded="true"],.ib[aria-pressed="true"]{color:var(--blue);background:color-mix(in srgb,var(--blue) 12%,transparent)}
+.quick{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;display:inline-flex;align-items:center;gap:6px;border:0;background:var(--surface);color:var(--fg);font:600 .85rem var(--display);border-radius:999px;padding:7px 12px;box-shadow:0 1px 4px rgb(0 0 0/.2);cursor:pointer;white-space:nowrap}
+.quick button:hover{background:var(--bg)}
+.quick button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue)}
+.quick .n{font:700 .72rem var(--mono);background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red);border-radius:999px;padding:1px 6px}
+.quick button[aria-pressed="true"] .n{background:rgb(255 255 255/.25);color:inherit}
+.sheet{background:var(--surface);border-radius:14px;box-shadow:0 2px 10px rgb(0 0 0/.22);overflow:auto;min-height:0;flex:0 1 auto;display:flex;flex-direction:column;overscroll-behavior:contain}
+.sheet .handle{display:none}
+.nhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.box{padding:14px;display:grid;gap:14px}
+.box h2{margin:0;font-size:1.05rem}
+.box .seg{display:flex}.box .seg button{flex:1}
+.box .note{padding:0;margin:0}
+.newsToggle{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:0;border-top:1px solid var(--line);background:none;color:var(--fg);font:700 .9rem var(--display);padding:12px 14px;cursor:pointer;text-align:left}
+.newsToggle .chev{color:var(--muted);transition:transform .15s}
+.newsToggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.mapinfo{position:absolute;z-index:900;left:50%;transform:translateX(-50%);bottom:24px;display:flex;gap:6px;align-items:center;max-width:calc(100% - 140px)}
+.pill{display:flex;flex-wrap:wrap;gap:2px 12px;background:var(--surface);border:0;border-radius:999px;padding:6px 14px;box-shadow:0 1px 4px rgb(0 0 0/.22);font:500 .78rem var(--display);color:var(--muted)}
+.pill b{font:700 .84rem var(--mono);color:var(--fg);margin-right:4px;font-variant-numeric:tabular-nums}
+.pill .late b{color:var(--amber)}
+button.pill{cursor:pointer;color:var(--fg);font-weight:700;flex:none}
+button.pill[aria-expanded="true"]{background:var(--fg);color:var(--bg)}
+.legendcard{position:absolute;z-index:950;bottom:58px;left:50%;transform:translateX(-50%);width:min(460px,calc(100% - 24px));background:var(--surface);border-radius:12px;box-shadow:0 4px 16px rgb(0 0 0/.22);padding:12px 14px;margin:0}
+.locdot{width:16px;height:16px;border-radius:50%;background:var(--blue);border:3px solid #fff;box-shadow:0 0 0 6px color-mix(in srgb,var(--blue) 25%,transparent)}
+@media (max-width:720px){
+  .side{left:8px;right:8px;top:8px;width:auto;max-height:none}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-height:52dvh;border-radius:16px 16px 0 0;z-index:1001;box-shadow:0 -2px 14px rgb(0 0 0/.25)}
+  .sheet.full{max-height:calc(100dvh - 64px)}
+  .sheet .handle{display:block;flex:none;width:100%;height:22px;border:0;cursor:pointer;background:var(--surface)}
+  .sheet .handle::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:8px auto}
+  .mapinfo{left:8px;transform:none;max-width:calc(100% - 66px);bottom:24px}
+  .app.sheet-open .mapinfo,.app.sheet-open .legendcard{display:none}
+  .legendcard{left:8px;transform:none;width:calc(100% - 16px)}
+  .nav a.hide-sm{display:none}
+}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;color:var(--fg);text-decoration:none}
 .brand b{color:var(--blue)}
 .nav{display:flex;align-items:center;gap:12px}
@@ -33,14 +84,6 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--display)}
 .lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
 .lang button{border:0;background:none;color:var(--muted);font:600 .8rem var(--mono);padding:6px 11px;cursor:pointer}
 .lang button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue)}
-h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;line-height:1.1}
-.sub{color:var(--muted);margin:0 0 14px;max-width:46rem}
-.kpis{display:flex;flex-wrap:wrap;gap:8px 22px;margin-bottom:12px;font-size:.92rem;color:var(--muted)}
-.kpis b{font:700 1.15rem var(--mono);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:6px}
-.kpis .late b{color:var(--amber)}
-
-/* Barre d'outils : recherche, profil, region, trajet */
-.tools{display:grid;grid-template-columns:minmax(0,1.6fr) auto auto auto;gap:10px;align-items:end;margin-bottom:14px}
 .field{display:grid;gap:4px;font-size:.78rem;font-weight:600;color:var(--muted);min-width:0}
 .field input,.field select{font:500 .95rem var(--display);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;min-width:0}
 .field select{padding-right:28px}
@@ -59,12 +102,8 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
 .btn.ghost{background:none;border-color:transparent;color:var(--muted);padding:6px 8px}
 .btn:disabled{opacity:.5;cursor:default}
-@media (max-width:980px){.tools{grid-template-columns:1fr 1fr}.tools .search{grid-column:1/-1}}
-@media (max-width:520px){.tools{grid-template-columns:1fr}.seg{display:flex}.seg button{flex:1;padding-inline:6px}}
-
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding-bottom:28px}
-#map{height:min(74vh,740px);min-height:420px;border-radius:14px;border:1px solid var(--line);background:var(--surface2)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted);margin-top:8px}
+#map{position:absolute;inset:0;background:var(--surface2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
 .legend .grad{gap:8px}
@@ -80,9 +119,34 @@ h1{font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:-.03em;margin:4px 0 6px;l
 .lbadge.lg{font-size:.9rem;padding:4px 7px;margin-right:8px}
 .picts{display:inline-flex;flex-wrap:wrap;gap:2px;vertical-align:middle}
 .leaflet-control-layers{font:500 13px var(--display);border-radius:10px!important}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;max-height:min(74vh,740px);overflow:auto}
-.panel>header{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:10px}
-.panel h2{font-size:1.05rem;margin:0}
+.news>header{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.news h2{font-size:1.05rem;margin:0}
+.fr{font:700 .6rem var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 3px;margin-left:4px;vertical-align:.1em}
+/* Itineraires (facon Google Maps : une carte par option, depliable) */
+.jrns{display:grid;gap:8px}
+.jrn{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.jrn.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.jhead{display:grid;gap:4px;width:100%;border:0;background:none;color:var(--fg);font:inherit;text-align:left;padding:10px 12px;cursor:pointer}
+.jtop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.jtop .t{font:700 1.02rem var(--mono);font-variant-numeric:tabular-nums}
+.jtop .dur{font-weight:700;white-space:nowrap}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:.84rem;color:var(--muted)}
+.chain .sep{color:var(--muted)}
+.jsub{font-size:.8rem;color:var(--muted)}
+.jsub.warn{color:var(--amber);font-weight:600}.jsub.bad{color:var(--red);font-weight:600}
+.legs{list-style:none;margin:0;padding:0 12px 12px;display:grid;gap:0}
+.leg{display:grid;grid-template-columns:54px 14px 1fr;gap:0 8px;font-size:.86rem}
+.leg .t{font:600 .82rem var(--mono);text-align:right;padding-top:1px}
+.leg .rail{position:relative}
+.leg .rail::before{content:"";position:absolute;left:5px;top:4px;bottom:-4px;width:4px;border-radius:2px;background:var(--lc,var(--blue))}
+.leg .rail::after{content:"";position:absolute;left:1px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:3px solid var(--lc,var(--blue));box-sizing:border-box}
+.leg.end .rail::before{display:none}
+.leg .what{padding-bottom:12px;min-width:0;overflow-wrap:anywhere}
+.leg .what small{display:block;color:var(--muted)}
+.xfer{display:grid;grid-template-columns:54px 14px 1fr;gap:0 8px;font-size:.8rem;color:var(--muted)}
+.xfer .rail{border-left:4px dotted var(--line);margin-left:5px}
+.xfer .what{padding:2px 0 12px}
+.xfer.warn .what{color:var(--amber);font-weight:600}.xfer.bad .what{color:var(--red);font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips button{font:600 .8rem var(--display);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 10px;cursor:pointer}
 .chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
@@ -154,80 +218,97 @@ table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
 .leaflet-popup-content .btn{margin-top:6px;padding:5px 9px;font-size:.78rem}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;font-size:.88rem;z-index:2000}
-@media (max-width:980px){.layout{grid-template-columns:1fr}.panel{max-height:none;overflow:visible}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <a class="brand" href="./"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a>
-    <nav class="nav"><a href="assistant.html">Copilote</a><a href="./#inscription" data-i18n="signup">Préinscription</a>
-      <div class="lang" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true">FR</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></nav>
-  </header>
+<header class="top wrap">
+  <a class="brand" href="./"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a>
+  <nav class="nav"><a href="assistant.html">Copilote</a><a class="hide-sm" href="./#inscription" data-i18n="signup">Préinscription</a>
+    <div class="lang" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true">FR</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></nav>
+</header>
+<h1 class="sr" data-i18n="h1">Les retards en direct, et ce qui arrive</h1>
 
-  <h1 data-i18n="h1">Les retards en direct, et ce qui arrive</h1>
-  <p class="sub" data-i18n="sub">Cherche ta région, ta ligne ou ton trajet : la carte montre les retards du jour, la liste les grèves et travaux qui te concernent.</p>
-  <div class="kpis" aria-live="polite">
-    <span><b id="kSt">—</b><span data-i18n="kSt">gares suivies</span></span>
-    <span class="late"><b id="kLate">—</b><span data-i18n="kLate">passages à +15 min</span></span>
-    <span><b id="kCanc">—</b><span data-i18n="kCanc">arrêts supprimés</span></span>
-    <span><b id="kUpd">—</b><span data-i18n="kUpd">dernière mise à jour</span></span>
-  </div>
+<main class="app" id="app">
+  <div id="map" role="region" aria-label="Carte des gares"></div>
 
-  <div class="tools">
-    <div class="field search"><label for="q" data-i18n="qLabel">Rechercher</label>
-      <div class="combo">
+  <div class="side">
+    <div class="searchbar" role="search">
+      <button class="ib" type="button" id="menuBtn" aria-expanded="false" aria-controls="sheet" data-i18n-aria="menu" aria-label="Préférences">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="combo"><label for="q" class="sr" data-i18n="qLabel">Rechercher</label>
         <input id="q" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="qList" aria-autocomplete="list"
                data-i18n-ph="qPh" placeholder="Une région, une ligne (RER A, TER C30…), une gare">
         <ul class="sugg" id="qList" role="listbox" hidden></ul>
       </div>
+      <button class="ib dir" type="button" id="tripBtn" data-i18n-aria="tripBtn" aria-label="Mon trajet">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l9.4 9.4-9.4 9.4L2.6 12z" fill="currentColor"/><path d="M9 14v-2.5a1.5 1.5 0 0 1 1.5-1.5H15m-2-2l2 2-2 2" fill="none" stroke="var(--surface)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
-    <div class="field"><span id="profLbl" data-i18n="profLbl">Mon profil</span>
-      <div class="seg" id="profile" role="group" aria-labelledby="profLbl">
-        <button type="button" data-p="quotidien" aria-pressed="false" data-i18n="pQ">Au quotidien</button>
-        <button type="button" data-p="grandes_lignes" aria-pressed="false" data-i18n="pG">Grandes lignes</button>
-        <button type="button" data-p="les_deux" aria-pressed="true" data-i18n="pB">Les deux</button>
-      </div>
-    </div>
-    <div class="field"><label for="region" data-i18n="regLbl">Ma région</label>
-      <select id="region"><option value="" data-i18n="regAll">Toute la France</option></select>
-    </div>
-    <div class="field"><span aria-hidden="true">&nbsp;</span>
-      <button class="btn primary" type="button" id="tripBtn" data-i18n="tripBtn">Mon trajet</button>
-    </div>
-  </div>
-
-  <div class="layout">
-    <div>
-      <div id="map" role="region" aria-label="Carte des gares"></div>
-      <div class="legend">
-        <span class="grad"><span data-i18n="lg0">fluide</span><i class="bar" aria-hidden="true"></i><span data-i18n="lg2">très perturbé</span></span>
-        <span><i class="ev ev-incident lg" aria-hidden="true"></i><span data-i18n="lgE">perturbation annoncée ici</span></span>
-        <span data-i18n="lgM">Trains : retard moyen, trains à +15 min et suppressions du jour. Métro, tram : intervalle entre deux rames comparé au prévu. Clique une ligne ou une gare pour le détail.</span>
-        <span data-i18n="lgZ">Vue large : les gares voisines sont regroupées (taille = trafic). Zoome pour le détail et le tracé des lignes.</span>
-      </div>
+    <div class="quick" role="toolbar" aria-label="Raccourcis">
+      <button type="button" id="newsBtn" aria-pressed="false" aria-controls="sheet">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4m0 3v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span data-i18n="newsBtn">Perturbations</span><span class="n" id="newsN" hidden></span></button>
+      <button type="button" id="regionBtn"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>
+        <span id="regionBtnLbl" data-i18n="regionBtn">Ma région</span></button>
+      <button type="button" id="locBtn"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span data-i18n="around">Autour de moi</span></button>
     </div>
 
-    <aside class="panel" aria-labelledby="pTitle">
+    <div class="sheet" id="sheet" hidden>
+      <button class="handle" type="button" id="handle" data-i18n-aria="expand" aria-label="Agrandir"></button>
       <section class="ctx" id="ctx" aria-live="polite" hidden></section>
-      <header>
-        <h2 id="pTitle"><span data-i18n="pTitle">Perturbations annoncées</span><span id="pScope"></span></h2>
-        <div class="chips" id="kinds" role="group" aria-label="Type">
-          <button type="button" data-k="all" aria-pressed="true" data-i18n="cAll">Tout</button>
-          <button type="button" data-k="greve" aria-pressed="false" data-i18n="cGreve">Grèves</button>
-          <button type="button" data-k="travaux" aria-pressed="false" data-i18n="cTravaux">Travaux</button>
-          <button type="button" data-k="incident" aria-pressed="false" data-i18n="cIncident">Incidents</button>
+      <button class="newsToggle" type="button" id="newsToggle" aria-expanded="false" aria-controls="newsBox" hidden><span id="newsToggleLbl"></span><span class="chev" aria-hidden="true">▾</span></button>
+      <section class="news" id="newsBox" aria-labelledby="pTitle" hidden>
+        <header>
+          <div class="nhead"><h2 id="pTitle"><span data-i18n="pTitle">Perturbations annoncées</span><span id="pScope"></span></h2>
+            <button class="btn ghost" type="button" data-close="news" data-i18n-aria="close" aria-label="Fermer">✕</button></div>
+          <div class="chips" id="kinds" role="group" aria-label="Type">
+            <button type="button" data-k="all" aria-pressed="true" data-i18n="cAll">Tout</button>
+            <button type="button" data-k="greve" aria-pressed="false" data-i18n="cGreve">Grèves</button>
+            <button type="button" data-k="travaux" aria-pressed="false" data-i18n="cTravaux">Travaux</button>
+            <button type="button" data-k="incident" aria-pressed="false" data-i18n="cIncident">Incidents</button>
+          </div>
+          <div class="chips" id="when" role="group" aria-label="Période">
+            <button type="button" data-w="0" aria-pressed="false" data-i18n="wNow">En cours</button>
+            <button type="button" data-w="7" aria-pressed="true" data-i18n="w7">7 prochains jours</button>
+          </div>
+        </header>
+        <div class="list" id="list"><p class="empty" data-i18n="loading">Chargement…</p></div>
+      </section>
+      <section class="box" id="menuBox" aria-labelledby="menuTitle" hidden>
+        <div class="nhead"><h2 id="menuTitle" data-i18n="settings">Préférences</h2>
+          <button class="btn ghost" type="button" data-close="menu" data-i18n-aria="close" aria-label="Fermer">✕</button></div>
+        <div class="field"><span id="profLbl" data-i18n="profLbl">Mon profil</span>
+          <div class="seg" id="profile" role="group" aria-labelledby="profLbl">
+            <button type="button" data-p="quotidien" aria-pressed="false" data-i18n="pQ">Au quotidien</button>
+            <button type="button" data-p="grandes_lignes" aria-pressed="false" data-i18n="pG">Grandes lignes</button>
+            <button type="button" data-p="les_deux" aria-pressed="true" data-i18n="pB">Les deux</button>
+          </div>
         </div>
-        <div class="chips" id="when" role="group" aria-label="Période">
-          <button type="button" data-w="0" aria-pressed="false" data-i18n="wNow">En cours</button>
-          <button type="button" data-w="7" aria-pressed="true" data-i18n="w7">7 prochains jours</button>
+        <div class="field"><label for="region" data-i18n="regLbl">Ma région</label>
+          <select id="region"><option value="" data-i18n="regAll">Toute la France</option></select>
         </div>
-      </header>
-      <div class="list" id="list"><p class="empty" data-i18n="loading">Chargement…</p></div>
-    </aside>
+        <p class="hint" data-i18n="sub">Cherche ta région, ta ligne ou ton trajet : la carte montre les retards du jour, la liste les grèves et travaux qui te concernent.</p>
+        <p class="note" data-i18n="note">Sources : données temps réel SNCF et Île-de-France Mobilités enregistrées par LateProof toutes les 2 minutes ; agenda public des grèves (cestlagreve.fr). Chiffres de la journée en cours, heure de Paris. Ton profil, ta région et tes trajets restent dans ce navigateur.</p>
+      </section>
+    </div>
   </div>
-  <p class="note" data-i18n="note">Sources : données temps réel SNCF et Île-de-France Mobilités enregistrées par LateProof toutes les 2 minutes ; agenda public des grèves (cestlagreve.fr). Chiffres de la journée en cours, heure de Paris. Ton profil, ta région et tes trajets restent dans ce navigateur.</p>
-</div>
+
+  <div class="mapinfo">
+    <div class="pill" aria-live="polite">
+      <span><b id="kSt">—</b><span data-i18n="kSt">gares suivies</span></span>
+      <span class="late"><b id="kLate">—</b><span data-i18n="kLate">passages à +15 min</span></span>
+      <span><b id="kCanc">—</b><span data-i18n="kCanc">arrêts supprimés</span></span>
+      <span><b id="kUpd">—</b><span data-i18n="kUpd">dernière mise à jour</span></span>
+    </div>
+    <button class="pill" type="button" id="legendBtn" aria-expanded="false" aria-controls="legendCard" data-i18n="legendBtn">Légende</button>
+  </div>
+  <div class="legendcard legend" id="legendCard" hidden>
+    <span class="grad"><span data-i18n="lg0">fluide</span><i class="bar" aria-hidden="true"></i><span data-i18n="lg2">très perturbé</span></span>
+    <span><i class="ev ev-incident lg" aria-hidden="true"></i><span data-i18n="lgE">perturbation annoncée ici</span></span>
+    <span data-i18n="lgM">Trains : retard moyen, trains à +15 min et suppressions du jour. Métro, tram : intervalle entre deux rames comparé au prévu. Clique une ligne ou une gare pour le détail.</span>
+    <span data-i18n="lgZ">Vue large : les gares voisines sont regroupées (taille = trafic). Zoome pour le détail et le tracé des lignes.</span>
+  </div>
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="config.js"></script>
@@ -253,7 +334,12 @@ const EN = {signup:"Pre-register", h1:"Train delays live, and what's coming", su
   dep:"Dep.", arr:"Arr.", line_:"Line", onTime:"on time", cancelled:"cancelled", noTrip:"No direct train found today between these two stations. Try nearby stations or another day.",
   pickBoth:"Pick a departure and an arrival station from the suggestions.", tripDay:"Today on this trip", tripFromTo:"Departures from now",
   fromHere:"Trip from here", toHere:"Trip to here", lineOf:"lines", around:"Around me", locating:"Locating…", noLoc:"Location unavailable",
-  scopeRegion:" · region", scopeLine:" · this line", scopeTrip:" · this trip", scopeStation:" · this station", noData:"No train recorded on this line today.", loadingCtx:"Loading…"};
+  scopeRegion:" · region", scopeLine:" · this line", scopeTrip:" · this trip", scopeStation:" · this station", noData:"No train recorded on this line today.", loadingCtx:"Loading…",
+  newsBtn:"Disruptions", regionBtn:"My region", settings:"Settings", legendBtn:"Legend", menu:"Settings", expand:"Expand", newsHere:"Disruptions",
+  direct:"Direct", oneChange:"1 change", changeAt:"Change at", walk:"walk", waitFor:"wait", tight:"Tight connection", missed:"Connection at risk",
+  towards:"towards", journeys:"Options in the next 3 hours", noJourney:"No route found in the next 3 hours with trains, RER and Transilien (at most one change). Metro and tram are not included: they publish no timetable.",
+  journeyNote:"Times and delays from live data. Connection checked with the known delays.", arrLate:"late on arrival", arrOk:"on time on arrival", leaveAt:"Leave", arriveAt:"arrive",
+  dur:"min", hr:"h", trainN:"train", origFr:"original in French"};
 const FR = {}; document.querySelectorAll("[data-i18n]").forEach(el => FR[el.dataset.i18n] = el.textContent);
 FR.qPh = document.getElementById("q").placeholder;
 Object.assign(FR, {tabGL:"TGV & Intercités", tabTER:"TER & régionaux", noHour:"Pas de passage dans l'heure.", trainNo:"Train", noTrain:"Détail indisponible.",
@@ -269,7 +355,12 @@ Object.assign(FR, {tabGL:"TGV & Intercités", tabTER:"TER & régionaux", noHour:
   dep:"Dép.", arr:"Arr.", line_:"Ligne", onTime:"à l'heure", cancelled:"supprimé", noTrip:"Aucun train direct trouvé aujourd'hui entre ces deux gares. Essaie des gares proches ou un autre jour.",
   pickBoth:"Choisis une gare de départ et une gare d'arrivée dans les suggestions.", tripDay:"Aujourd'hui sur ce trajet", tripFromTo:"Départs à partir de maintenant",
   fromHere:"Partir d'ici", toHere:"Arriver ici", lineOf:"lignes", around:"Autour de moi", locating:"Localisation…", noLoc:"Position indisponible",
-  scopeRegion:" · région", scopeLine:" · cette ligne", scopeTrip:" · ce trajet", scopeStation:" · cette gare", noData:"Aucun train enregistré sur cette ligne aujourd'hui.", loadingCtx:"Chargement…"});
+  scopeRegion:" · région", scopeLine:" · cette ligne", scopeTrip:" · ce trajet", scopeStation:" · cette gare", noData:"Aucun train enregistré sur cette ligne aujourd'hui.", loadingCtx:"Chargement…",
+  tripBtn:"Mon trajet", menu:"Préférences", expand:"Agrandir", newsHere:"Perturbations",
+  direct:"Direct", oneChange:"1 correspondance", changeAt:"Correspondance à", walk:"à pied", waitFor:"attente", tight:"Correspondance juste", missed:"Correspondance compromise",
+  towards:"direction", journeys:"Itinéraires des 3 prochaines heures", noJourney:"Aucun itinéraire trouvé dans les 3 prochaines heures en train, RER et Transilien (une correspondance au plus). Le métro et le tram ne sont pas inclus : ils ne publient pas d'horaires.",
+  journeyNote:"Horaires et retards en temps réel. Correspondance vérifiée avec les retards connus.", arrLate:"de retard à l'arrivée", arrOk:"à l'heure à l'arrivée", leaveAt:"Départ", arriveAt:"arrivée",
+  dur:"min", hr:"h", trainN:"train", origFr:"texte d'origine en français"});
 let lang = "fr"; try { lang = localStorage.getItem("lp-lang") || (navigator.language || "fr").slice(0, 2); } catch (e) {}
 if (lang !== "en") lang = "fr";
 const L_ = () => lang === "en" ? EN : FR;
@@ -280,10 +371,134 @@ function setLang(l) {
   lang = l; document.documentElement.lang = l;
   document.querySelectorAll("[data-i18n]").forEach(el => { const v = L_()[el.dataset.i18n]; if (v) el.textContent = v; });
   document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = L_()[el.dataset.i18nPh]);
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => { const v = L_()[el.dataset.i18nAria]; if (v) { el.setAttribute("aria-label", v); el.title = v; } });
   document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
   store.set("lp-lang", l);
-  baseControl(); drawStations(); drawList(); drawCtx(); drawEvents();
+  if (l === "en") ensureTranslator();   // appele depuis un clic : le navigateur peut telecharger son modele de traduction
+  baseControl(); drawStations(); drawList(); drawCtx(); drawEvents(); regionLabel();
 }
+
+// ================================================================= Traduction des perturbations (textes publies en francais)
+// 1) les formules les plus frequentes des flux SNCF / IDFM, traduites a la main ; 2) sinon la traduction integree du
+// navigateur (Chrome, sur l'appareil, gratuite) ; 3) sinon le texte d'origine, marque « FR ».
+const D = "(\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?)";
+const NEWS_EN = [
+  [/^\W*plus d.?infos?(?:rmations?)?\s*:?\s*$/i, "More information"],
+  [/^\W*forte affluence\W*$/i, "Heavy crowds expected"],
+  [/^\W*votre train est retardé\W*$/i, "Your train is delayed"],
+  [/^\W*voitures? hors[- ]?quai\W*$/i, "Some carriages stop beyond the platform"],
+  [/^\W*voitures? hors[- ]?quai en gare de (.+?)\W*$/i, "Some carriages stop beyond the platform at $1"],
+  [/^\W*travaux prévus sur votre ligne\W*$/i, "Planned works on your line"],
+  [/^\W*travaux prévus\W*$/i, "Planned works"],
+  [/^\W*travaux prévus en gare de (.+?)\W*$/i, "Planned works at $1 station"],
+  [/^\W*travaux en cours sur votre ligne\W*$/i, "Works in progress on your line"],
+  [/^\W*travaux en cours sur la ligne (\w+)\W*$/i, "Works in progress on line $1"],
+  [/^\W*travaux en cours\W*$/i, "Works in progress"],
+  [/^\W*travaux sur les voies\W*$/i, "Track works"],
+  [/^\W*travaux du (\d+) au (\d+ \w+)\W*$/i, "Works from $1 to $2"],
+  [/^\W*arrêt\(s\) non desservi\(s\)\W*$/i, "Stop(s) not served"],
+  [/^\W*arrêts supprimés\W*$/i, "Stops cancelled"],
+  [/^\W*(attention, )?certaines gares non desservies\W*$/i, "Some stations are not served"],
+  [/^\W*votre train ne dessert pas certaines gares\W*$/i, "Your train does not stop at some stations"],
+  [/^\W*arrêts? (.+?) non desservis?\W*$/i, "$1: not served"],
+  [/^\W*trafic perturbé\W*$/i, "Disrupted service"],
+  [/^\W*trafic interrompu\W*$/i, "Service interrupted"],
+  [/^\W*trafic ralenti\W*$/i, "Slow service"],
+  [/^\W*perturbation - retard\W*$/i, "Disruption – delays"],
+  [new RegExp(`^\\W*indisponibilité d'un matériel : votre (\\w+) du ${D} sera supprimé\\W*$`, "i"), "Rolling stock unavailable: your $1 on $2 is cancelled"],
+  [new RegExp(`^\\W*incident lors de la préparation du train : votre (\\w+) du ${D} sera supprimé\\W*$`, "i"), "Incident while preparing the train: your $1 on $2 is cancelled"],
+  [/^\W*incident lors de la préparation du train\W*$/i, "Incident while preparing the train"],
+  [/^\W*équipements? en gare hors[- ]service\W*$/i, "Station equipment out of service"],
+  [/^\W*équipements? en gare de (.+?) hors[- ]service\W*$/i, "Station equipment out of service at $1"],
+  [/^\W*train court\W*$/i, "Short train"],
+  [/^\W*train supprimé\W*$/i, "Train cancelled"],
+  [/^\W*queue du train fermée aux voyageurs\W*$/i, "Rear of the train closed to passengers"],
+  [/^\W*adhérence dégradée\W*$/i, "Poor rail adhesion"],
+  [/^\W*arrêt à la demande\W*$/i, "Request stop"],
+  [/^\W*arrêt déporté (.+?)\W*$/i, "Stop moved: $1"],
+  [/^\W*interruption (?!des |de |du |totale)(.+?)\W*$/i, "Line closed: $1"],
+  [/^\W*train supplémentaire (.+?)\W*$/i, "Extra train: $1"],
+  [/^\W*(\d{4,6})\s+supprim[ée]e?\W*$/i, "Train $1 cancelled"],
+  [/^\W*positionnement rame (.+?)\W*$/i, "Train set position: $1"],
+  [/^\W*(?:⚠️\s*)?(.+?)\s*:\s*forte affluence\W*$/i, "$1: heavy crowds expected"],
+  [/^\W*(\d{4,6})\s*:\s*les places sont limitées\W*$/i, "Train $1: limited seats"],
+  [/^\W*réduction de capacité\s*:\s*les places sont limitées\W*$/i, "Reduced capacity: limited seats"],
+  [/^\W*travaux prévus entre (.+?) et (.+?)\W*$/i, "Planned works between $1 and $2"],
+  [/^\W*travaux entre (.+?) et (.+?)\W*$/i, "Works between $1 and $2"],
+  [/^\W*travaux prévus sur la ligne (\w+)\W*$/i, "Planned works on line $1"],
+  [/^\W*travaux prévus (?:le |les )?(.+?)\W*$/i, "Planned works: $1"],
+  [/^\W*travaux (?:sur votre ligne )?du (.+?) au (.+?)(?:, puis du (.+?) au (.+?))?\W*$/i, "Works on your line from $1 to $2"],
+  [/^\W*travaux sur les lignes (.+?)\W*$/i, "Works on lines $1"],
+  [/^\W*travaux de voirie à (.+?)\W*$/i, "Road works in $1"],
+  [/^\W*travaux week-end (.+?)\W*$/i, "Weekend works $1"],
+  [/^\W*travaux (?:en cours )?sur le réseau allemand\W*$/i, "Works on the German network"],
+  [/^\W*travaux suite aux intempéries\W*$/i, "Works after bad weather"],
+  [/^\W*travaux en cours sur la ligne à grande vitesse à (.+?)\W*$/i, "Works on the high-speed line at $1"],
+  [/^\W*conséquences intempéries du (.+?)\W*$/i, "After the bad weather of $1"],
+  [/^\W*indisponibilité du matériel suite aux intempéries\W*$/i, "Rolling stock unavailable after bad weather"],
+  [/^\W*gare fermée\W*$/i, "Station closed"],
+  [/^\W*gare (?:de )?(.+?) fermée\W*$/i, "$1 station closed"],
+  [/^\W*complet (?:le )?(.+?)\W*$/i, "Fully booked: $1"],
+  [/^\W*plan de transport adapté\W*$/i, "Adjusted timetable"],
+  [/^\W*transport à la demande à (.+?)\W*$/i, "On-demand transport in $1"],
+  [/^\W*montée par l'avant pour les voyageurs à destination de (.+?)\W*$/i, "Passengers for $1: board at the front"],
+  [/^\W*placement à l'avant du train pour les voyageurs à destination de (.+?)\W*$/i, "Passengers for $1: travel at the front of the train"],
+  [/^\W*horaire adapté de votre train (.+?)\W*$/i, "Adjusted schedule for your train $1"],
+  [/^\W*modification de composition à (.+?)\W*$/i, "Change of train composition at $1"],
+  [/^\W*(.+?)\s*:\s*dérangement d'installations\W*$/i, "$1: equipment failure"],
+  [/^\W*gare de (.+?)\s*:\s*les ascenseurs sont hors[- ]service\W*$/i, "$1 station: lifts out of service"],
+  [/^\W*équipement en gare de\s+(.+?)\s*:\s*dysfonctionnement du distributeur de billets\W*$/i, "$1 station: ticket machine out of order"],
+  [/^\W*rame fermée aux voyageurs à l'arrière de votre (\w+) (\w+), accès par l'avant du train\W*$/i, "Rear of your $1 $2 closed: board at the front"],
+  [/^\W*adaptation (.+?)\W*$/i, "Adjusted service: $1"],
+  [/^\W*campagne adhérence (\d{4}) du (.+?) au (.+?)\W*$/i, "$1 rail adhesion campaign from $2 to $3"],
+  [/^\W*les dimanches (.+?),\s*interruption totale des circulations entre (.+?) et (.+?)(?: de \d.*)?$/i, "Sundays $1: no trains between $2 and $3"],
+  [/^\W*interruption des circulations\W*$/i, "Service suspended"],
+  [/^\W*vents violents (?:le )?(.+?)\W*$/i, "Strong winds on $1"],
+  // Greves : titre libre, traduit par le navigateur (sinon laisse en francais)
+];
+const FR_WORDS = {lundi: "Monday", mardi: "Tuesday", mercredi: "Wednesday", jeudi: "Thursday", vendredi: "Friday", samedi: "Saturday", dimanche: "Sunday",
+  dimanches: "Sundays", samedis: "Saturdays", janvier: "January", février: "February", mars: "March", avril: "April", mai: "May", juin: "June", juillet: "July",
+  août: "August", septembre: "September", octobre: "October", novembre: "November", décembre: "December"};
+// Seulement les jours, les mois et « et » entre deux espaces : les noms de gares (« Gare du Nord ») restent intacts.
+const frWords = t => t.replace(/(^|[\s(])([A-Za-zÀ-ÿ]+)(?=$|[\s,.)])/g, (all, pre, w) => { const v = FR_WORDS[w.toLowerCase()]; return v ? pre + v : all; })
+  .replace(/ et /g, " and ").replace(/\bdu (?=\d)/g, "from ").replace(/\bau (?=\d)/g, "to ").replace(/\s{2,}/g, " ");
+const trCache = new Map();
+let translator = null, trQueue = new Set(), trBusy = false;
+async function ensureTranslator() {
+  if (translator || !("Translator" in self)) return;
+  try {
+    const within = (pr, ms) => Promise.race([pr, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms))]);
+    const a = await within(Translator.availability({sourceLanguage: "fr", targetLanguage: "en"}), 3000);
+    if (a === "unavailable") return;
+    translator = await within(Translator.create({sourceLanguage: "fr", targetLanguage: "en"}), 60000);
+    if (trQueue.size) pumpTr();
+  } catch (e) { translator = null; }
+}
+async function pumpTr() {
+  if (trBusy || !translator) return;
+  trBusy = true;
+  try {
+    for (const t of [...trQueue].slice(0, 40)) {
+      trQueue.delete(t);
+      try { trCache.set(t, await translator.translate(t)); } catch (e) { trCache.set(t, null); }
+    }
+  } finally { trBusy = false; }
+  if (lang === "en") { drawList(); drawEvents(); }
+  if (trQueue.size) pumpTr();
+}
+/** Texte d'une perturbation dans la langue choisie : {text, fr} (fr = encore en francais). */
+function tr(text) {
+  text = String(text || "").trim();
+  if (lang !== "en" || !text) return {text, fr: false};
+  if (!trCache.has(text)) {
+    const hit = NEWS_EN.find(([re]) => re.test(text));
+    if (hit) { const m = text.match(hit[0]); trCache.set(text, hit[1].replace(/\$(\d)/g, (_, k) => frWords(m[k] || "").trim())); }
+    else { trQueue.add(text); if (translator) pumpTr(); }
+  }
+  const v = trCache.get(text);
+  return v ? {text: v, fr: false} : {text, fr: true};
+}
+const trHtml = text => { const t = tr(text); return esc(t.text) + (t.fr ? `<span class="fr" title="${L_().origFr}">FR</span>` : ""); };
 document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
 
 // ================================================================= Regions (cadres approximatifs, pour zoomer et filtrer)
@@ -304,7 +519,8 @@ REGIONS.forEach(r => regionSel.add(new Option(r.name, r.id)));
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const dark = matchMedia("(prefers-color-scheme: dark)").matches;
 // Un seul calque de dessin pour lignes + gares : sinon le calque du dessus capte tous les clics.
-const map = L.map("map", {preferCanvas: true, renderer: L.canvas({tolerance: 5}), zoomSnap: .5}).setView([46.6, 2.4], 5.5);
+const map = L.map("map", {preferCanvas: true, renderer: L.canvas({tolerance: 5}), zoomSnap: .5, zoomControl: false}).setView([46.6, 2.4], 5.5);
+L.control.zoom({position: "bottomright"}).addTo(map);
 // Fonds de carte (sans cle). Par defaut « Plan » (Esri World Street Map) : lisible comme un plan type Google (rues, quartiers,
 // reperes), sans relief ni satellite. En option : gris clair, gris sombre (fond + noms des lieux), ou OpenStreetMap detaille.
 const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/", EATTR = "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap";
@@ -321,7 +537,7 @@ function baseControl() {
   if (baseCtl) baseCtl.remove();
   const T = L_(), names = {plan: T.bPlan, light: T.bLight, dark: T.bDark, osm: T.bOsm}, o = {};
   Object.keys(BASES).forEach(k => o[names[k]] = BASES[k]);
-  baseCtl = L.control.layers(o, null, {position: "topright"}).addTo(map);
+  baseCtl = L.control.layers(o, null, {position: "bottomright"}).addTo(map);
 }
 map.on("baselayerchange", e => { const k = Object.keys(BASES).find(k => BASES[k] === e.layer); if (k) store.set("lp-base", k); });
 map.createPane("seg").style.zIndex = 350;   // troncons sous les gares
@@ -458,7 +674,7 @@ function drawEvents() {
     L.marker([s[1], s[2]], {icon: L.divIcon({className: "", html: `<i class="ev ev-${top.kind}" style="width:${sz}px;height:${sz}px;font-size:${sz - 7}px"><span>!</span></i>`,
       iconSize: [sz, sz], iconAnchor: [sz / 2, sz]}),
       keyboard: false, title: s[0]})
-      .bindPopup(`<b>${esc(s[0])}</b>` + xs.slice(0, 5).map(x => `<br><span class="tag t-${x.kind}">${T[x.kind] || x.kind}</span> ${itemPics(x)}${esc(x.title)}`).join("") +
+      .bindPopup(`<b>${esc(s[0])}</b>` + xs.slice(0, 5).map(x => `<br><span class="tag t-${x.kind}">${T[x.kind] || x.kind}</span> ${itemPics(x)}${trHtml(x.title)}`).join("") +
         (xs.length > 5 ? `<br>+ ${xs.length - 5}` : ""), {maxWidth: 320}).addTo(evLayer);
   });
 }
@@ -488,6 +704,9 @@ function visible() {
 }
 function drawList() {
   const T = L_(), list = document.getElementById("list"), v = visible(), now = Date.now() / 1000;
+  const nEl = document.getElementById("newsN"); nEl.hidden = !items.length; nEl.textContent = v.length > 99 ? "99+" : String(v.length);
+  document.getElementById("newsToggleLbl").textContent = `${T.newsHere}${!ctx || ctx.type === "tripform" ? "" :
+    ({region: T.scopeRegion, line: T.scopeLine, trip: T.scopeTrip, station: T.scopeStation})[ctx.type]} · ${v.length}`;
   document.getElementById("pScope").textContent = !ctx || ctx.type === "tripform" ? "" :
     ({region: T.scopeRegion, line: T.scopeLine, trip: T.scopeTrip, station: T.scopeStation})[ctx.type];
   if (!v.length) { list.innerHTML = `<p class="empty">${items.length || stations.length ? T.none : T.unavailable}</p>`; return; }
@@ -495,7 +714,7 @@ function drawList() {
     const on = (x.t_start ?? 0) <= now;
     const period = on ? T.now + (x.t_end ? ` · ${T.to} ${fmtDay(x.t_end)}` : "") : `${T.from} ${fmtDay(x.t_start)}${x.t_end ? ` ${T.to} ${fmtDay(x.t_end)}` : ""}`;
     return `<button class="item" type="button" data-i="${items.indexOf(x)}"><span class="tag t-${x.kind}">${T[x.kind] || x.kind}</span>
-      <span class="ttl">${esc(x.title)}</span>
+      <span class="ttl">${trHtml(x.title)}</span>
       <span class="meta">${itemPics(x) ? itemPics(x) + " " : ""}${period}${x.lines && !itemPics(x) ? " · " + esc(x.lines) : ""}${x.severity === "bloquant" ? ` · <span class="sev">${T.block}</span>` : ""}</span></button>`;
   }).join("");
 }
@@ -624,7 +843,7 @@ function trainHtml(tr, x) {
   if (!tr) return `<p class="hint">${T.noTrain}</p>`;
   const here = (ctx.data && ctx.data.sncfIds) || [], i0 = Math.max(0, tr.stops.findIndex(st => here.includes(st[6])));
   const after = tr.stops.slice(i0 + 1), skipped = after.filter(st => st[5]).length;
-  const issues = [...(tr.alerts || []).map(a => `<li>${esc(a)}</li>`),
+  const issues = [...(tr.alerts || []).map(a => `<li>${trHtml(a)}</li>`),
     (tr.max_delay || 0) >= 300 ? `<li>${T.maxDelay} ${Math.round(tr.max_delay / 60)} ${T.min}</li>` : "",
     skipped ? `<li>${skipped} ${T.skippedStops}</li>` : "", tr.status === "CANCELED" ? `<li>${T.cancelledTrain}</li>` : ""].join("");
   return `<p class="hint">${T.trainNo} ${esc(tr.num)} · ${esc(MODES[tr.mode] || tr.mode || "")}${tr.long ? " · " + esc(tr.long) : ""}</p>` +
@@ -633,7 +852,8 @@ function trainHtml(tr, x) {
       return `<li class="${st[5] ? "skip" : ""}"><span class="t">${ts ? hhmm(ts) : ""}</span><span>${esc(st[0] || "")}</span>` +
         `<span>${st[5] ? `<span class="d d-bad">${T.cancelled}</span>` : (dl || 0) >= 60 ? badge(dl, false) : ""}</span></li>`; }).join("") + `</ol>`;
 }
-function drawCtx() {
+function drawCtx() { drawCtxInner(); updateSheet(); }
+function drawCtxInner() {
   const T = L_();
   if (!ctx) { ctxEl.hidden = true; ctxEl.innerHTML = ""; return; }
   ctxEl.hidden = false;
@@ -709,18 +929,14 @@ function drawCtx() {
       (s.id ? `<div class="row"><button class="btn" type="button" data-trip="a" data-st="${esc(key(s))}">${T.fromHere}</button>` +
               `<button class="btn" type="button" data-trip="b" data-st="${esc(key(s))}">${T.toHere}</button></div>` : "");
   } else {
-    // Formulaire de trajet (+ resultat si un trajet est affiche)
-    const a = ctx.a, b = ctx.b, d = ctx.type === "trip" ? ctx.data : null, now = Date.now() / 1000;
+    // Formulaire de trajet (+ itineraires si un trajet est affiche)
+    const a = ctx.a, b = ctx.b, d = ctx.type === "trip" ? ctx.data : null;
     let res = "";
     if (ctx.type === "trip" && !d) res = `<p class="hint">${T.loadingCtx}</p>`;
-    else if (d && !d.trains.length && !d.n) res = `<p class="hint">${T.noTrip}</p>`;
+    else if (d && !d.journeys.length) res = `<p class="hint">${T.noJourney}</p>`;
     else if (d) {
-      res = `<div><p class="hint">${T.tripDay}</p><div class="stats">${stat(d.n, T.trains)}${stat(d.late15, T.lateT, "warn")}${stat(d.cancelled, T.cancT, "bad")}</div></div>` +
-        (d.trains.length ? `<table class="trains"><thead><tr><th>${T.dep}</th><th>${T.arr}</th><th>${T.line_}</th></tr></thead><tbody>` +
-          d.trains.map(t => `<tr class="${t.arr + (t.arr_delay || 0) < now ? "past" : ""}"><td class="t">${hhmm(t.dep)}${badge(t.dep_delay, t.cancelled)}</td>` +
-            `<td class="t">${hhmm(t.arr)}${t.cancelled ? "" : badge(t.arr_delay, false)}</td><td>${idfGeo && idfGeo.lines[t.line_id] ? picto(t.line_id, t.line) : esc(MODES[t.mode] || t.mode || "") + " " + esc(t.line || t.num)}</td></tr>`).join("") +
-          `</tbody></table>` : "") +
-        `<div class="row"><button class="btn" type="button" data-act="save">★ ${T.save}</button></div>`;
+      res = `<div class="jrns" role="list" aria-label="${esc(T.journeys)}"><p class="hint">${T.journeys}</p>${d.journeys.map(journeyHtml).join("")}</div>` +
+        `<p class="hint">${T.journeyNote}</p><div class="row"><button class="btn" type="button" data-act="save">★ ${T.save}</button></div>`;
     }
     ctxEl.innerHTML = head(T.kTrip, a && b && ctx.type === "trip" ? `${esc(a.name)} → ${esc(b.name)}` : T.kTrip) +
       `<div class="trip-form">
@@ -728,12 +944,14 @@ function drawCtx() {
         <div class="field"><label for="tb">${T.tripTo}</label><div class="combo"><input id="tb" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="tbList" placeholder="${T.tripPh}" value="${esc(b ? b.name : "")}"><ul class="sugg" id="tbList" role="listbox" hidden></ul></div></div>
         <button class="btn swap" type="button" data-act="swap" aria-label="${T.swap}">⇅</button>
         <button class="btn primary go" type="button" data-act="go">${T.tripGo}</button>
-      </div>` + res + savedHtml() + `<p class="soon">${T.soon}</p>`;
+      </div>` + res + savedHtml();
     combo(document.getElementById("ta"), document.getElementById("taList"), "station", o => { ctx.a = o.st; });
     combo(document.getElementById("tb"), document.getElementById("tbList"), "station", o => { ctx.b = o.st; });
   }
 }
 ctxEl.addEventListener("click", e => {
+  const jb = e.target.closest("[data-j]");
+  if (jb) { const i = +jb.dataset.j; ctx.sel = ctx.sel === i ? -1 : i; drawJourney(); drawCtx(); return; }
   const tab = e.target.closest("[data-tab]");
   if (tab) { ctx.tab = tab.dataset.tab; ctx.open = null; drawCtx(); return; }
   const trn = e.target.closest("[data-train]");
@@ -763,6 +981,7 @@ const key = s => s.net + "|" + s.id;
 const findSt = k => stations.find(s => key(s) === k);
 
 function setCtx(c) {
+  if (c && c !== ctx) { panel = null; newsOpen = false; }
   ctx = c; ctxLayer.clearLayers(); focusLayer.clearLayers();
   drawNetwork(); drawStations(); drawCtx(); drawList(); drawEvents();
   const h = !c || c.type === "tripform" ? "" : c.type === "region" ? "region=" + c.r.id :
@@ -833,36 +1052,81 @@ function openLine(l) {
     if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(.1));
   }).catch(() => { ctx.data = {stops: [], paths: [], n: 0}; drawCtx(); });
 }
-// Trajet : meme reseau requis ; si les deux gares sont sur deux reseaux (SNCF / IDF), on essaie la gare jumelle a moins de 600 m.
-function twins(s) {
-  const out = [s], cosl = Math.cos(s.lat * Math.PI / 180);
-  stations.forEach(o => { if (o !== s && Math.hypot((o.lat - s.lat) * 111, (o.lon - s.lon) * 111 * cosl) < .6) out.push(o); });
-  return out;
+// Itineraires (direct ou une correspondance, SNCF + RER / Transilien, avec marche entre gares voisines) : calcules en base.
+const realT = (t, d) => t + Math.max(d || 0, 0);
+// On ne garde que les meilleures options : aucune autre ne part plus tard ET n'arrive plus tot.
+function bestJourneys(js) {
+  const dep = j => realT(j.legs[0].dep, j.legs[0].dep_delay), arr = j => realT(j.arr, j.arr_delay);
+  const sorted = [...js].sort((x, y) => dep(x) - dep(y) || x.transfers - y.transfers);
+  const out = []; let best = Infinity;
+  for (let i = sorted.length - 1; i >= 0; i--) { const j = sorted[i]; if (arr(j) < best) { out.unshift(j); best = arr(j); } }
+  return out.slice(0, 6);
+}
+function legColor(l) {
+  const id = l.info && l.info.line_id, g = idfGeo && id && idfGeo.lines[id];
+  return g ? g.color : css("--blue");
+}
+function legPic(l) {
+  const i = l.info || {};
+  if (idfGeo && i.line_id && idfGeo.lines[i.line_id]) return picto(i.line_id, i.line);
+  const name = i.line && !/^\d{3}[A-Z]$/.test(i.line) ? " " + i.line : "";   // « 631B » : code interne SNCF, pas un nom de ligne
+  return `<span class="lbadge">${esc((MODES[i.mode] || i.mode || "Train") + name)}</span>`;
+}
+const WALK = `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4" r="2" fill="currentColor"/><path d="M9 21l2-6 3 3v3m-3-6l1-5-3 2-1 3m4-5l2 3 3 1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+function durTxt(sec) { const T = L_(), m = Math.max(0, Math.round(sec / 60)); return m < 60 ? `${m} ${T.dur}` : `${Math.floor(m / 60)} ${T.hr} ${String(m % 60).padStart(2, "0")}`; }
+function xferOf(j) {
+  if (j.legs.length < 2) return null;
+  const [l1, l2] = j.legs, slack = realT(l2.dep, l2.dep_delay) - realT(l1.arr, l1.arr_delay) - (j.walk_s || 0);
+  return {slack, at: l2.from[0], walk: j.walk_s || 0, cls: slack < 120 ? "bad" : slack < 300 ? "warn" : ""};
+}
+function journeyHtml(j, i) {
+  const T = L_(), first = j.legs[0], last = j.legs[j.legs.length - 1], open = ctx.sel === i, x = xferOf(j);
+  const dep = realT(first.dep, first.dep_delay), arr = realT(last.arr, last.arr_delay), late = Math.round(Math.max(last.arr_delay || 0, 0) / 60);
+  const dl = v => (v || 0) >= 60 ? badge(v, false) : "";
+  const sub = (late ? `+${late} ${T.min} ${T.arrLate}` : T.arrOk) + (x && x.cls ? ` · ${x.cls === "bad" ? T.missed : T.tight}` : "");
+  const subCls = x && x.cls === "bad" || late >= 15 ? "bad" : (x && x.cls) || late >= 5 ? "warn" : "";
+  let body = "";
+  if (open) {
+    body = `<ol class="legs">` + j.legs.map((l, k) => {
+      const inf = l.info || {}, c = legColor(l);
+      const between = k > 0 && x ? `<li class="xfer ${x.cls}"><span></span><span class="rail"></span><span class="what">${T.changeAt} ${esc(x.at)} · ` +
+        (x.walk ? `${WALK} ${Math.round(x.walk / 60)} ${T.min} ${T.walk} · ` : "") + `${Math.max(0, Math.round(x.slack / 60))} ${T.min} ${T.waitFor}` +
+        (x.cls ? ` · ${x.cls === "bad" ? T.missed : T.tight}` : "") + `</span></li>` : "";
+      return between +
+        `<li class="leg" style="--lc:${c}"><span class="t">${hhmm(l.dep)}${dl(l.dep_delay)}</span><span class="rail"></span><span class="what"><b>${esc(l.from[0] || "")}</b>` +
+        `<small>${legPic(l)} ${inf.dest ? `${T.towards} ${esc(inf.dest)}` : ""}${inf.num ? ` · ${T.trainN} ${esc(inf.num)}` : ""}</small></span></li>` +
+        `<li class="leg end" style="--lc:${c}"><span class="t">${hhmm(l.arr)}${dl(l.arr_delay)}</span><span class="rail"></span><span class="what"><b>${esc(l.to[0] || "")}</b></span></li>`;
+    }).join("") + `</ol>`;
+  }
+  return `<div class="jrn${open ? " on" : ""}" role="listitem"><button class="jhead" type="button" data-j="${i}" aria-expanded="${open}">` +
+    `<span class="jtop"><span class="t">${hhmm(dep)} → ${hhmm(arr)}</span><span class="dur">${durTxt(arr - dep)}</span></span>` +
+    `<span class="chain">${j.legs.map(legPic).join(`<span class="sep">›</span>${j.walk_s ? WALK : ""}`)}<span>· ${j.legs.length > 1 ? T.oneChange : T.direct}</span></span>` +
+    `<span class="jsub ${subCls}">${sub}</span></button>${body}</div>`;
+}
+function drawJourney() {
+  ctxLayer.clearLayers();
+  const a = ctx.a, b = ctx.b, j = ctx.data && ctx.data.journeys[ctx.sel], pts = [[a.lat, a.lon], [b.lat, b.lon]];
+  const dot = (p, name, c, r) => L.circleMarker(p, {radius: r, color: "#fff", weight: 2, fillColor: c, fillOpacity: 1})
+    .bindTooltip(esc(name)).on("click", () => openStation({name, lat: p[0], lon: p[1]})).addTo(ctxLayer);
+  if (j) j.legs.forEach((l, k) => {
+    const c = legColor(l), p1 = [l.from[1], l.from[2]], p2 = [l.to[1], l.to[2]];
+    if (p1[0] != null && p2[0] != null) { L.polyline([p1, p2], {color: c, weight: 6, opacity: .9}).addTo(ctxLayer); pts.push(p1, p2); }
+    if (k > 0) { const q = j.legs[k - 1].to; if (q[1] != null && p1[0] != null) L.polyline([[q[1], q[2]], p1], {color: css("--muted"), weight: 3, dashArray: "2 7"}).addTo(ctxLayer); }
+    if (p1[0] != null) dot(p1, l.from[0], c, k ? 5 : 7);
+    if (p2[0] != null) dot(p2, l.to[0], c, k === j.legs.length - 1 ? 7 : 5);
+  });
+  else [a, b].forEach(s => dot([s.lat, s.lon], s.name, css("--blue"), 7));
+  ctx.bounds = L.latLngBounds(pts.filter(p => p[0] != null)).pad(.15); map.fitBounds(ctx.bounds);
 }
 async function openTrip(a, b) {
-  setCtx({type: "trip", a, b, data: null});
-  const pairs = [];
-  twins(a).forEach(x => twins(b).forEach(y => { if (x.net === y.net && x.id !== y.id) pairs.push([x, y]); }));
-  const exact = p => (p[0] === a) + (p[1] === b);
-  pairs.sort((p, q) => exact(q) - exact(p));
+  setCtx({type: "trip", a, b, data: null, sel: 0});
   let d = null;
-  for (const [x, y] of pairs.slice(0, 4)) {
-    try { d = await rpc("public_trip", {p_net: x.net, p_from: x.id, p_to: y.id}); } catch (e) { d = null; }
-    if (d && (d.n || d.trains.length)) break;
-  }
+  try { d = await rpc("public_journey", {p_from_net: a.net, p_from_id: a.id, p_to_net: b.net, p_to_id: b.id}); } catch (e) { d = null; }
   if (!ctx || ctx.type !== "trip" || ctx.a !== a || ctx.b !== b) return;
-  ctx.data = d || {n: 0, late15: 0, cancelled: 0, trains: [], path: null, line_ids: []};
-  const path = (ctx.data.path || []).map(p => [p[1], p[2]]), red = css("--blue");
-  if (path.length > 1) {
-    L.polyline(path, {color: red, weight: 5, opacity: .85}).addTo(ctxLayer);
-    ctx.data.path.forEach((p, i) => L.circleMarker([p[1], p[2]], {radius: i === 0 || i === path.length - 1 ? 7 : 4, color: "#fff", weight: 2,
-      fillColor: red, fillOpacity: 1}).bindTooltip(esc(p[0])).on("click", () => openStation({name: p[0], lat: p[1], lon: p[2]})).addTo(ctxLayer));
-    ctx.bounds = L.latLngBounds(path).pad(.15); map.fitBounds(ctx.bounds);
-  } else {
-    ctx.bounds = L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]).pad(.2); map.fitBounds(ctx.bounds);
-    [a, b].forEach(s => L.circleMarker([s.lat, s.lon], {radius: 7, color: "#fff", weight: 2, fillColor: red, fillOpacity: 1}).bindTooltip(esc(s.name)).addTo(ctxLayer));
-  }
-  drawCtx(); drawList();
+  const js = d && d.journeys ? bestJourneys(d.journeys) : [];
+  ctx.data = {journeys: js, line_ids: [...new Set(js.flatMap(j => j.legs.map(l => l.info && l.info.line_id).filter(Boolean)))]};
+  ctx.sel = js.length ? 0 : -1;
+  drawJourney(); drawCtx(); drawList(); drawEvents();
 }
 // Boutons « Partir d'ici / Arriver ici » dans les bulles des gares
 document.addEventListener("click", e => {
@@ -877,7 +1141,7 @@ document.getElementById("tripBtn").addEventListener("click", () => {
   setCtx({type: "tripform"}); document.getElementById("ta")?.focus();
 });
 regionSel.addEventListener("change", () => {
-  myRegion = regionSel.value; store.set("lp-region", myRegion || null);
+  myRegion = regionSel.value; store.set("lp-region", myRegion || null); regionLabel();
   openRegion(myRegion);
 });
 
@@ -893,6 +1157,60 @@ document.getElementById("profile").addEventListener("click", e => {
   applyProfile(b.dataset.p);
   if (b.dataset.p === "grandes_lignes" && (!ctx || ctx.type === "region")) { setCtx(null); map.setView([46.6, 2.4], 5.5); }
   else if (b.dataset.p === "quotidien" && myRegion && !ctx) openRegion(myRegion);
+});
+
+
+// ================================================================= Panneau flottant facon Google Maps : rien d'ouvert par defaut
+const byId = id => document.getElementById(id);
+let panel = null, newsOpen = false;   // panel : null | "news" | "menu" ; newsOpen : perturbations depliees sous une fiche
+function updateSheet() {
+  const sheet = byId("sheet"), menu = panel === "menu", hasCtx = !!ctx && !menu;
+  byId("menuBox").hidden = !menu;
+  ctxEl.hidden = !hasCtx || !ctxEl.innerHTML;
+  byId("newsToggle").hidden = !hasCtx;
+  byId("newsToggle").setAttribute("aria-expanded", String(newsOpen));
+  byId("newsBox").hidden = menu || (hasCtx ? !newsOpen : panel !== "news");
+  sheet.hidden = !menu && !hasCtx && panel !== "news";
+  byId("app").classList.toggle("sheet-open", !sheet.hidden);
+  byId("menuBtn").setAttribute("aria-expanded", String(menu));
+  byId("newsBtn").setAttribute("aria-pressed", String(!sheet.hidden && !byId("newsBox").hidden));
+  if (sheet.hidden) sheet.classList.remove("full");
+}
+byId("menuBtn").addEventListener("click", () => { panel = panel === "menu" ? null : "menu"; updateSheet(); });
+byId("newsBtn").addEventListener("click", () => {
+  if (ctx && panel !== "menu") newsOpen = !newsOpen; else panel = panel === "news" ? null : "news";
+  updateSheet();
+});
+byId("newsToggle").addEventListener("click", () => { newsOpen = !newsOpen; updateSheet(); });
+byId("sheet").addEventListener("click", e => {
+  const c = e.target.closest("[data-close]"); if (!c) return;
+  if (c.dataset.close === "menu") panel = null; else if (ctx) newsOpen = false; else panel = null;
+  updateSheet();
+});
+byId("handle").addEventListener("click", () => byId("sheet").classList.toggle("full"));
+byId("legendBtn").addEventListener("click", () => {
+  const c = byId("legendCard"); c.hidden = !c.hidden; byId("legendBtn").setAttribute("aria-expanded", String(!c.hidden));
+});
+function regionLabel() { const r = regionById(myRegion); byId("regionBtnLbl").textContent = r ? r.name : L_().regionBtn; }
+byId("regionBtn").addEventListener("click", () => {
+  if (myRegion) { panel = null; openRegion(myRegion); }
+  else { panel = "menu"; updateSheet(); byId("region").focus(); }
+});
+let locMarker = null;
+byId("locBtn").addEventListener("click", () => {
+  if (!navigator.geolocation) { toast(L_().noLoc); return; }
+  toast(L_().locating);
+  navigator.geolocation.getCurrentPosition(p => {
+    const ll = [p.coords.latitude, p.coords.longitude];
+    if (locMarker) locMarker.remove();
+    locMarker = L.marker(ll, {icon: L.divIcon({className: "", html: '<div class="locdot"></div>', iconSize: [16, 16], iconAnchor: [8, 8]}), keyboard: false, interactive: false}).addTo(map);
+    map.setView(ll, 14);
+  }, () => toast(L_().noLoc), {enableHighAccuracy: false, timeout: 10000, maximumAge: 60000});
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape" || e.target.closest(".combo")) return;
+  if (!byId("legendCard").hidden) { byId("legendBtn").click(); return; }
+  if (panel) { panel = null; updateSheet(); } else if (ctx && newsOpen) { newsOpen = false; updateSheet(); }
 });
 
 // ================================================================= Partage
