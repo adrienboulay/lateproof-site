@@ -140,6 +140,9 @@ h1,h2,h3{font-weight:700;letter-spacing:-.015em}
 .pill3 .tag.k-l{color:var(--lime)!important}.pill3 .tag.k-o{color:var(--orange)!important}
 .screen .card{background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.06)}
 .card.lime{background:var(--surface2);color:var(--fg)}.card.lime .t{color:var(--lime)}
+.c3h{display:flex;align-items:center;gap:8px}
+.c3gus{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface3);overflow:hidden}
+.c3gus .gus{width:28px;height:auto}
 .chip.o{background:rgb(255 138 92/.14);color:var(--orange)}.chip.k{background:rgb(212 255 58/.12);color:var(--lime)}
 .biz{background:var(--surface2);color:var(--fg);box-shadow:inset 0 1px 0 rgb(255 255 255/.08)}
 .biz p{color:#C5C8CD}
@@ -224,7 +227,7 @@ input,select{background:var(--bg);border-color:var(--surface3)}
           <div class="hd"><svg width="24" height="24" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="#D4FF3A"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="6" stroke-linecap="round" pathLength="360" stroke-dasharray="120 360" transform="rotate(-90 32 32)"/></svg>lateproof</div>
           <div class="card" id="c1"><span class="t">07:59 · Lyon Part-Dieu</span><b data-i18n="c1">À bord : TER 8h12 vers Grenoble</b></div>
           <div class="card hide" id="c2"><span class="t">08:20</span><b data-i18n="c2">Ton train prend du retard</b><span class="chip o">+27 min</span></div>
-          <div class="card lime hide" id="c3"><span class="t" data-i18n="c3t">LE COPILOTE</span><b data-i18n="c3">Ta correspondance est perdue. Prends le 9h04, voie B.</b></div>
+          <div class="card lime hide" id="c3"><span class="t c3h"><span class="c3gus" id="c3gus"></span><span data-i18n="c3t">GUS, TON COPILOTE</span></span><b data-i18n="c3">Ta correspondance est perdue. Prends le 9h04, voie B.</b></div>
           <div class="card hide" id="c4"><span class="t">09:41</span><b data-i18n="c4">Justificatif envoyé à ton manager</b><span class="chip k" data-i18n="c4c">Vérifié</span></div>
         </div></div>
         <div>
@@ -290,6 +293,8 @@ input,select{background:var(--bg);border-color:var(--surface3)}
 </div>
 
 <script src="config.js"></script>
+<script src="gus.js"></script>
+<script>document.getElementById("c3gus").innerHTML = Gus.svg({head: true, size: 28, mood: "content"}); Gus.fab({tip: "Une question ? Demande à Gus."});</script>
 <script>
 // ------------------------------------------------------------------ Textes FR / EN
 const I18N = {
@@ -303,7 +308,7 @@ const I18N = {
     dT:"One tap on board", dP:"“I'm on board”: LateProof knows your train and tracks its delay minute by minute, connections included.",
     aT:"Proof, no arguing", aP:"A certificate signed by your phone, checked against official data. Your manager or teacher verifies it in 3 seconds. And we tell you what you're entitled to.",
     kDemo:"Try it", demoTitle:"A morning with LateProof.", demoLede:"Tap “Next step” to follow a trip, from the platform to the certificate.",
-    c1:"On board: 8:12 regional train to Grenoble", c2:"Your train is running late", c3t:"THE COPILOT", c3:"Your connection is lost. Take the 9:04, platform B.",
+    c1:"On board: 8:12 regional train to Grenoble", c2:"Your train is running late", c3t:"GUS, YOUR COPILOT", c3:"Your connection is lost. Take the 9:04, platform B.",
     c4:"Certificate sent to your manager", c4c:"Verified",
     s1:"One tap on the platform: LateProof knows which train you're on. Your location never leaves your phone.",
     s2:"The delay is tracked live, from official SNCF and Île-de-France Mobilités data.",

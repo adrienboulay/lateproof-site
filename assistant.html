@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Copilote · LateProof</title>
+<title>Gus, ton copilote · LateProof</title>
 <meta name="description" content="Pose ta question à l'écrit ou à la voix : retards en direct, prochains trains, plan B et tes droits en cas de retard.">
 <meta name="theme-color" content="#121417">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23D4FF3A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%230B0C0F' stroke-width='10' stroke-linecap='round' pathLength='360' stroke-dasharray='120 360' transform='rotate(-90 32 32)'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%230B0C0F'/%3E%3C/svg%3E">
@@ -79,6 +79,19 @@ h1,h2,h3{font-family:var(--head);font-weight:700;letter-spacing:-.015em}
 .chip{background:var(--surface);box-shadow:inset 0 1px 0 rgb(255 255 255/.06)}
 textarea,.field input{background:var(--surface);border-color:var(--surface3)}
 .beta{background:var(--amber-bg);border-color:transparent}
+
+/* ---- Gus, la mascotte ---- */
+.hero{display:flex;align-items:center;gap:16px;margin:6px 0 14px}
+.hero h1{margin-top:0}.hero .sub{margin-bottom:6px}
+.gus-hero{flex:none;display:grid;place-items:center;width:92px;height:92px;border-radius:50%;background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.08)}
+.gus-hero .gus{width:84px;height:auto}
+.gus-state{margin:0;font:600 .85rem var(--display);color:var(--muted)}
+.gus-state.on{color:var(--lime)}
+.brow{display:flex;align-items:flex-end;gap:8px;max-width:92%}
+.brow .msg.bot{max-width:none;min-width:0}
+.ava{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface3);overflow:hidden}
+.ava .gus{width:30px;height:auto}
+@media (max-width:520px){.hero{gap:12px}.gus-hero{width:68px;height:68px}.gus-hero .gus{width:62px}}
 </style>
 </head>
 <body>
@@ -88,8 +101,14 @@ textarea,.field input{background:var(--surface);border-color:var(--surface3)}
     <nav class="nav"><a href="app.html">Mon espace</a><a href="carte.html">Carte</a><a href="assistant.html" aria-current="page">Copilote</a></nav>
   </header>
 
-  <h1>Ton copilote de trajet</h1>
-  <p class="sub">Demande-lui à l'écrit ou à la voix : le retard de ton train, le prochain départ, un plan B, tes droits. Il répond avec les données relevées en direct.</p>
+  <div class="hero">
+    <div id="gusHero" class="gus-hero"></div>
+    <div>
+      <h1>Gus, ton copilote de trajet</h1>
+      <p class="sub">Demande-lui à l'écrit ou à la voix : le retard de ton train, le prochain départ, un plan B, tes droits. Il répond avec les données relevées en direct.</p>
+      <p id="gusState" class="gus-state" aria-live="polite">Prêt à t'aider</p>
+    </div>
+  </div>
   <p class="beta"><b>Version d'essai gratuite.</b> Les questions sont traitées par Mistral AI (Europe) et peuvent servir à améliorer ses modèles : n'écris pas d'informations personnelles.</p>
 
   <label class="field">Ton trajet habituel (facultatif, reste sur ton appareil)
@@ -119,6 +138,7 @@ textarea,.field input{background:var(--surface);border-color:var(--surface3)}
 </div>
 
 <script src="config.js"></script>
+<script src="gus.js"></script>
 <script>
 const CFG = window.LP_CONFIG || {};
 const $ = (id) => document.getElementById(id);
@@ -139,6 +159,19 @@ const SUGGESTIONS = [
   "Mon TGV a 1 h de retard, quels sont mes droits ?",
 ];
 
+// ---------------------------------------------------------------- Gus : humeur selon ce qui se passe
+const gus = Gus.mount($("gusHero"), {head: true, size: 84, mood: "content"});
+const STATE = {neutre: "Prêt à t'aider", content: "Prêt à t'aider", ecoute: "Je t'écoute…", reflexion: "Je regarde le trafic…", retard: "Il y a du retard", bravo: "C'est noté !"};
+let moodTimer = null;
+function setMood(m, hold) {
+  clearTimeout(moodTimer);
+  gus.set({mood: m});
+  const s = $("gusState"); s.textContent = STATE[m] || ""; s.classList.toggle("on", m === "ecoute" || m === "reflexion");
+  if (hold) moodTimer = setTimeout(() => setMood("content"), hold);
+}
+// Une réponse qui parle de retard ou de suppression rend Gus soucieux.
+const moodFor = (text) => /\+\s?\d+\s?min|retard|supprim|annul|grève|perturb/i.test(text) && !/aucun retard|pas de retard|à l'heure/i.test(text) ? "retard" : "content";
+
 function bubble(role, text, opts = {}) {
   const d = document.createElement("div");
   d.className = `msg ${role === "user" ? "user" : "bot"}${opts.err ? " err" : ""}`;
@@ -149,20 +182,29 @@ function bubble(role, text, opts = {}) {
     b.addEventListener("click", () => say(text));
     d.appendChild(document.createElement("br")); d.appendChild(b);
   }
-  chat.appendChild(d);
-  d.scrollIntoView({block: "nearest", behavior: "smooth"});
-  return d;
+  const node = role === "user" ? d : withAvatar(d, opts.err ? "neutre" : moodFor(text));
+  chat.appendChild(node);
+  node.scrollIntoView({block: "nearest", behavior: "smooth"});
+  return node;
+}
+function withAvatar(d, mood) {
+  const row = document.createElement("div");
+  row.className = "brow";
+  row.innerHTML = `<span class="ava">${Gus.svg({head: true, size: 30, mood})}</span>`;
+  row.appendChild(d);
+  return row;
 }
 function typing() {
   const d = document.createElement("div");
-  d.className = "msg bot"; d.setAttribute("aria-label", "Le copilote réfléchit");
+  d.className = "msg bot"; d.setAttribute("aria-label", "Gus réfléchit");
   d.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
-  chat.appendChild(d); d.scrollIntoView({block: "nearest"});
-  return d;
+  const row = withAvatar(d, "reflexion");
+  chat.appendChild(row); row.scrollIntoView({block: "nearest"});
+  return row;
 }
 function renderAll() {
   chat.textContent = "";
-  if (!history.length) bubble("bot", "Bonjour ! Je suis ton copilote de trajet. Dis-moi où tu vas ou quelle ligne tu prends, je regarde l'état du trafic en direct.");
+  if (!history.length) bubble("bot", "Salut, moi c'est Gus, ton copilote de trajet ! Dis-moi où tu vas ou quelle ligne tu prends, je regarde l'état du trafic en direct.");
   history.forEach((m) => bubble(m.role, m.content));
   $("chips").hidden = history.length > 0;
 }
@@ -181,6 +223,7 @@ async function ask(text) {
   bubble("user", text);
   q.value = ""; grow();
   const wait = typing();
+  setMood("reflexion");
   let answer, err = false;
   try {
     if (!CFG.url) throw new Error("hors ligne");
@@ -198,6 +241,7 @@ async function ask(text) {
   }
   wait.remove();
   bubble("bot", answer, {err});
+  setMood(err ? "neutre" : moodFor(answer), 9000);
   if (!err) { history.push({role: "assistant", content: answer}); store.set("lp-chat", history.slice(-20)); }
   else history.pop();                          // la question pourra etre reposee
   if (speakBox.checked && !err) say(answer);
@@ -256,13 +300,14 @@ mic.addEventListener("click", () => {
   };
   rec.onend = () => {
     listening = false; mic.setAttribute("aria-pressed", "false"); mic.setAttribute("aria-label", "Parler");
+    if (!busy) setMood("content");
     if (finalText.trim()) {
       // Qui parle veut sans doute entendre la reponse : on active la lecture (modifiable).
       if (canSpeak && store.get("lp-speak") !== false) { speakBox.checked = true; store.set("lp-speak", true); }
       ask(finalText);
     }
   };
-  try { rec.start(); listening = true; mic.setAttribute("aria-pressed", "true"); mic.setAttribute("aria-label", "Arrêter d'écouter"); }
+  try { rec.start(); listening = true; setMood("ecoute"); mic.setAttribute("aria-pressed", "true"); mic.setAttribute("aria-label", "Arrêter d'écouter"); }
   catch (e) { listening = false; }
 });
 

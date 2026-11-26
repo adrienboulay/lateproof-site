@@ -136,6 +136,12 @@ h1,h2,h3{font-family:var(--head);font-weight:700;letter-spacing:-.015em}
 .tabs a[aria-current="page"]{background:var(--surface3);color:var(--lime)}
 .field input,.field select{background:var(--surface);border-color:var(--surface3)}
 .notice{background:var(--amber-bg);border-color:transparent}
+
+/* ---- Gus dans l'accueil ---- */
+.gus-intro{display:flex;align-items:flex-end;gap:12px;margin:6px 0 2px}
+.gus-fig{flex:none;width:118px}
+.gus-say{position:relative;margin:0 0 34px;padding:12px 14px;border-radius:18px 18px 18px 6px;background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.08);font-size:.95rem;line-height:1.45}
+@media (max-width:420px){.gus-fig{width:96px}.gus-fig .gus{width:96px;height:auto}}
 </style>
 </head>
 <body>
@@ -155,6 +161,8 @@ h1,h2,h3{font-family:var(--head);font-weight:700;letter-spacing:-.015em}
 
 <script src="config.js"></script>
 <script src="lp-core.js"></script>
+<script src="gus.js"></script>
+<script>Gus.fab({bottom: "92px"});</script>
 <script>
 "use strict";
 const {rpc, store, fmt, esc, passkey} = LP;
@@ -234,14 +242,18 @@ route(/^\/bienvenue$/, () => {
   let step = 0; const tmp = {a: null, b: null};
   const draw = () => {
     const dots = `<div class="steps" aria-hidden="true">${[0, 1, 2].map(i => `<span class="${i <= step ? "on" : ""}">${i + 1}</span>`).join("")}</div>`;
-    if (step === 0) view.innerHTML = dots + `<h1>Bienvenue sur LateProof</h1>
+    const GUS = [["salut", "content", "Salut, moi c'est Gus ! Je surveille tes trains et je composte la preuve quand ils sont en retard."],
+      ["billet", "neutre", "Dis-moi quel train tu prends : je le surveille chaque matin pour toi."],
+      ["repos", "content", "Ta clé signe tes justificatifs. Même moi, je ne peux pas en faire à ta place."]][step];
+    const gusIntro = `<div class="gus-intro"><div class="gus-fig">${Gus.svg({pose: GUS[0], mood: GUS[1], size: 118})}</div><p class="gus-say">${GUS[2]}</p></div>`;
+    if (step === 0) view.innerHTML = dots + gusIntro + `<h1>Bienvenue sur LateProof</h1>
       <div class="card"><p><b>Ton copilote quand le train déraille.</b> Le retard de ton trajet en direct, un plan B, et quand tu arrives en retard, un <b>justificatif infalsifiable</b> que ton employeur ou ton prof vérifie en 3 secondes, sans rien installer.</p>
       <p class="muted small">Tes trajets, tes justificatifs et ta clé restent sur ce téléphone. Tu décides seul de ce que tu montres, et à qui.</p></div>
       <button class="btn primary big" id="next">Commencer</button><button class="btn ghost" id="skip">Passer</button>`;
-    if (step === 1) view.innerHTML = dots + `<h1>Ton trajet habituel</h1><p class="sub">Pour te prévenir dès qu'il y a un problème. Tu pourras le changer plus tard.</p>
+    if (step === 1) view.innerHTML = dots + gusIntro + `<h1>Ton trajet habituel</h1><p class="sub">Pour te prévenir dès qu'il y a un problème. Tu pourras le changer plus tard.</p>
       <div class="card">${stationField("oa", "Départ", tmp.a && tmp.a.name, s => tmp.a = s)}${stationField("ob", "Arrivée", tmp.b && tmp.b.name, s => tmp.b = s)}</div>
       <button class="btn primary big" id="next">Continuer</button><button class="btn ghost" id="skip">Plus tard</button>`;
-    if (step === 2) view.innerHTML = dots + `<h1>La clé de ton téléphone</h1>
+    if (step === 2) view.innerHTML = dots + gusIntro + `<h1>La clé de ton téléphone</h1>
       <div class="card"><p>Tes justificatifs sont <b>signés par ton téléphone</b>, avec ton visage, ton empreinte ou ton code, comme pour un paiement. Personne d'autre ne peut en créer à ton nom, pas même LateProof.</p>
       <p class="muted small">La clé ne quitte jamais ton téléphone. Tu peux aussi la créer au moment de ton premier justificatif.</p></div>
       <button class="btn primary big" id="next">Créer ma clé</button><button class="btn ghost" id="skip">Plus tard</button>`;
