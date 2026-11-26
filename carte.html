@@ -1540,6 +1540,25 @@ function load() {
     .then(() => rpc("public_disruptions", {days: 7})).then(d => { items = d.items || []; drawList(); drawEvents(); }).catch(() => drawList())
     .then(() => lines.length ? null : rpc("public_lines").then(d => { lines = d || []; })).catch(() => {});
 }
+// Lien du copilote (#de=…&vers=…) : du texte libre, dicté ou tapé. Gare connue d'abord, sinon adresse, sinon « ma position ».
+async function placeFromText(t) {
+  const q = (t || "").trim();
+  if (!q || /^(ma position|ici|chez moi|moi|là où je suis|ma localisation)$/i.test(q)) {
+    const p = await currentPos(); return p ? resolvePoint(p.lat, p.lon, L_().myPos) : null;
+  }
+  const looksAddress = /\d|\b(rue|avenue|av\.|boulevard|bd|place|chemin|allée|impasse|quai|route|cours)\b/i.test(q);
+  const st = looksAddress ? null : suggest(q.replace(/^(la |le |l')?gare (de |du |d')?(?=\S+ )/i, ""), "station")[0] || suggest(q, "station")[0];
+  if (st && st.s >= 2) return st.st;
+  const g = (await geocode(q))[0];
+  if (g) return resolvePoint(g.lat, g.lon, g.label);
+  return st ? st.st : null;
+}
+async function openSpoken(from, to) {
+  const [a, b] = await Promise.all([placeFromText(from), placeFromText(to)]);
+  if (!b) { toast(`« ${to} » : lieu introuvable`); setCtx({type: "tripform", a}); return; }
+  if (!a) { setCtx({type: "tripform", b}); return; }
+  setEnd("a", a); setEnd("b", b);
+}
 // Ouverture : lien partage (#region=, #ligne=, #trajet=) > trajet saisi a l'inscription > region (profil quotidien) > France
 let tries = 0;
 function boot() {
@@ -1551,6 +1570,7 @@ function boot() {
   if (h.get("region")) return openRegion(h.get("region"));
   if (h.get("ligne")) { const [net, id] = h.get("ligne").split("|"); const l = lines.find(x => x.net === net && x.id === id); if (l) return openLine(l); }
   if (h.get("gare")) { const s = findSt(h.get("gare")); if (s) { map.setView([s.lat, s.lon], 14); return openStation(s); } }
+  if (h.get("vers")) { openSpoken(h.get("de") || "ma position", h.get("vers")); history.replaceState(null, "", location.pathname + location.search); return; }
   if (h.get("trajet")) { const [ka, kb] = h.get("trajet").split(">"); const a = findSt(ka), b = findSt(kb); if (a && b) return openTrip(a, b); }
   const saved = savedTrips()[0];
   if (saved && profile !== "grandes_lignes") { const a = findSt(saved.a), b = findSt(saved.b); if (a && b) return openTrip(a, b); }

@@ -92,6 +92,19 @@ textarea,.field input{background:var(--surface);border-color:var(--surface3)}
 .ava{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface3);overflow:hidden}
 .ava .gus{width:30px;height:auto}
 @media (max-width:520px){.hero{gap:12px}.gus-hero{width:68px;height:68px}.gus-hero .gus{width:62px}}
+
+/* ---- Dictée en direct ---- */
+.live{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px 10px 14px;border-radius:16px;background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.08)}
+.lv-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 calc(var(--lv,0) * 9px) rgb(212 255 58/.22);transition:box-shadow .08s}
+.live.on .lv-dot{background:var(--lime);animation:lvp 1.4s ease-in-out infinite}
+.lv-txt{flex:1;min-width:0;font-size:1rem;line-height:1.4;overflow-wrap:anywhere}
+.lv-stop{flex:none;border:0;border-radius:999px;background:var(--surface3);color:var(--fg);font:700 .85rem var(--display);padding:8px 14px;cursor:pointer}
+.live:not(.on) .lv-stop{display:none}
+@keyframes lvp{0%,100%{opacity:1}50%{opacity:.55}}
+.msg .go{display:inline-block;margin-top:8px;padding:8px 14px;border-radius:999px;background:var(--lime);color:#121417;font-weight:800;text-decoration:none}
+.icon.mic[aria-pressed="true"]{background:var(--lime);border-color:var(--lime);color:#121417}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgb(212 255 58/.5)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.live.on .lv-dot{animation:none}}
 </style>
 </head>
 <body>
@@ -119,9 +132,14 @@ textarea,.field input{background:var(--surface);border-color:var(--surface3)}
   <div id="chips" class="chips" aria-label="Exemples de questions"></div>
 
   <div class="composer">
+    <div id="live" class="live" hidden aria-live="polite">
+      <span class="lv-dot" aria-hidden="true"></span>
+      <span id="liveTxt" class="lv-txt">Je t'écoute…</span>
+      <button id="liveStop" class="lv-stop" type="button">Terminer</button>
+    </div>
     <form id="form" class="row" autocomplete="off">
       <label for="q" class="sr">Ta question</label>
-      <textarea id="q" rows="1" maxlength="1000" placeholder="Pose ta question…"></textarea>
+      <textarea id="q" rows="1" maxlength="1000" placeholder="Pose ta question ou dis « de Lyon à Grenoble »…"></textarea>
       <button id="mic" class="icon mic" type="button" aria-pressed="false" aria-label="Parler" title="Parler">
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
@@ -131,9 +149,10 @@ textarea,.field input{background:var(--surface);border-color:var(--surface3)}
     </form>
     <div class="opts">
       <label><input id="speak" type="checkbox"> Lire les réponses à voix haute</label>
+      <label><input id="handsfree" type="checkbox"> Conversation à la voix</label>
       <button id="reset" type="button">Nouvelle conversation</button>
     </div>
-    <p id="micNote" class="opts" hidden>La dictée vocale n'est pas disponible dans ce navigateur : essaie Chrome, Edge ou Safari.</p>
+    <p id="micNote" class="opts" hidden>La dictée vocale n'est pas disponible dans ce navigateur : essaie Chrome, Edge ou Safari, ou écris ta question.</p>
   </div>
 </div>
 
@@ -141,8 +160,9 @@ textarea,.field input{background:var(--surface);border-color:var(--surface3)}
 <script src="gus.js"></script>
 <script>
 const CFG = window.LP_CONFIG || {};
+const ENDPOINT = () => (CFG.url ? `${CFG.url}/functions/v1/assistant` : null);
 const $ = (id) => document.getElementById(id);
-const chat = $("chat"), q = $("q"), form = $("form"), mic = $("mic"), send = $("send"), speakBox = $("speak"), trajetIn = $("trajet");
+const chat = $("chat"), q = $("q"), form = $("form"), mic = $("mic"), send = $("send"), speakBox = $("speak"), handsBox = $("handsfree"), trajetIn = $("trajet");
 const store = {   // confort uniquement : tout marche si le navigateur bloque le stockage
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
   set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -152,16 +172,16 @@ const store = {   // confort uniquement : tout marche si le navigateur bloque le
 let history = (store.get("lp-chat") || []).slice(-20);
 let busy = false;
 const SUGGESTIONS = [
+  "De Lyon Part-Dieu à Grenoble",
+  "Je veux aller à Massy-Palaiseau",
   "Mon trajet habituel est-il perturbé ?",
-  "Prochains départs à Gare de Lyon",
   "Le RER B est-il à l'heure aujourd'hui ?",
-  "Y a-t-il des grèves cette semaine ?",
   "Mon TGV a 1 h de retard, quels sont mes droits ?",
 ];
 
 // ---------------------------------------------------------------- Gus : humeur selon ce qui se passe
 const gus = Gus.mount($("gusHero"), {head: true, size: 84, mood: "content"});
-const STATE = {neutre: "Prêt à t'aider", content: "Prêt à t'aider", ecoute: "Je t'écoute…", reflexion: "Je regarde le trafic…", retard: "Il y a du retard", bravo: "C'est noté !"};
+const STATE = {neutre: "Prêt à t'aider", content: "Prêt à t'aider", ecoute: "Je t'écoute…", reflexion: "Je regarde le trafic…", retard: "Il y a du retard", bravo: "C'est parti !"};
 let moodTimer = null;
 function setMood(m, hold) {
   clearTimeout(moodTimer);
@@ -176,13 +196,18 @@ function bubble(role, text, opts = {}) {
   const d = document.createElement("div");
   d.className = `msg ${role === "user" ? "user" : "bot"}${opts.err ? " err" : ""}`;
   d.textContent = text;                       // jamais de HTML venant du modele
+  if (opts.link) {
+    const a = document.createElement("a");
+    a.className = "go"; a.href = opts.link.href; a.textContent = opts.link.label;
+    d.appendChild(document.createElement("br")); d.appendChild(a);
+  }
   if (role !== "user" && !opts.typing && canSpeak) {
     const b = document.createElement("button");
     b.type = "button"; b.className = "say"; b.textContent = "▶ Écouter";
     b.addEventListener("click", () => say(text));
     d.appendChild(document.createElement("br")); d.appendChild(b);
   }
-  const node = role === "user" ? d : withAvatar(d, opts.err ? "neutre" : moodFor(text));
+  const node = role === "user" ? d : withAvatar(d, opts.mood || (opts.err ? "neutre" : moodFor(text)));
   chat.appendChild(node);
   node.scrollIntoView({block: "nearest", behavior: "smooth"});
   return node;
@@ -204,7 +229,7 @@ function typing() {
 }
 function renderAll() {
   chat.textContent = "";
-  if (!history.length) bubble("bot", "Salut, moi c'est Gus, ton copilote de trajet ! Dis-moi où tu vas ou quelle ligne tu prends, je regarde l'état du trafic en direct.");
+  if (!history.length) bubble("bot", "Salut, moi c'est Gus, ton copilote de trajet ! Dis-moi où tu vas, par exemple « de Lyon à Grenoble » ou « je veux aller à Massy », et je t'ouvre l'itinéraire. Tu peux aussi me demander l'état d'une ligne.");
   history.forEach((m) => bubble(m.role, m.content));
   $("chips").hidden = history.length > 0;
 }
@@ -213,39 +238,91 @@ $("chips").append(...SUGGESTIONS.map((s) => {
   b.addEventListener("click", () => ask(s)); return b;
 }));
 
-async function ask(text) {
+// ---------------------------------------------------------------- trajets : compris ici même, sans IA
+// « de X à Y », « je vais à Y », « comment aller à Y depuis X », « emmène-moi à Y »…
+const SEP = "(?:à|au|aux|jusqu'à|jusqu'au|jusqu'aux|vers|pour|direction)";
+const VERB = /\b(aller|vais|va|vas|allons|rendre|rends|rentre|rentrer|itin[ée]raire|trajet|emm[eè]ne|am[eè]ne|chemin|partir|pars|rejoindre|direction|go)\b/;
+function cleanPlace(p) {
+  return p.replace(/^(?:la |le |les |l')(?=gare|station|ville)/, "").replace(/^(?:la |le |l')/, "")
+    .replace(/\s+(?:en (?:train|rer|métro|metro|tram|transilien|ter|tgv)|s'il te pla[iî]t|stp|maintenant|ce soir|ce matin|demain|aujourd'hui|tout de suite)$/g, "")
+    .replace(/["«»]/g, "").trim();
+}
+function parseTrip(raw) {
+  const t = raw.toLowerCase().replace(/[’]/g, "'").replace(/[?!.;]+/g, " ").replace(/\s+/g, " ").trim();
+  if (t.length > 160) return null;
+  const ok = (a, b) => { a = cleanPlace(a); b = cleanPlace(b); return b.length >= 2 && a.length >= 2 && a !== b ? {from: a, to: b} : null; };
+  let m = t.match(new RegExp(`(?:^|\\s)(?:de|depuis|d')\\s*(.+?)\\s+${SEP}\\s+(.+)$`));
+  if (m && (VERB.test(t) || /^(?:de|depuis|d')/.test(t))) return ok(m[1], m[2]);
+  m = t.match(new RegExp(`\\s${SEP}\\s+(.+?)\\s+(?:depuis|en partant de|à partir de)\\s+(.+)$`));
+  if (m && VERB.test(t)) return ok(m[2], m[1]);
+  m = t.match(new RegExp(`\\b(?:aller|vais|va|vas|allons|rendre|rends|rentre|rentrer|emm[eè]ne[- ]moi|am[eè]ne[- ]moi|itin[ée]raire|trajet|chemin|partir|pars)\\b.*?\\s${SEP}\\s+(.+)$`));
+  if (m) return ok("ma position", m[1]);
+  return null;
+}
+const cap = (s) => s.replace(/(^|[\s-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase());
+const tripUrl = (t) => `carte.html#de=${encodeURIComponent(t.from)}&vers=${encodeURIComponent(t.to)}`;
+const tripText = (t) => `Je t'ouvre l'itinéraire ${t.from === "ma position" ? "depuis ta position" : "de " + cap(t.from)} vers ${cap(t.to)}.`;
+let leaving = false;
+async function goTrip(t, spoken) {
+  leaving = true;
+  setMood("bravo");
+  if (spoken) await spoken;              // on laisse Gus finir sa phrase
+  setTimeout(() => { location.href = tripUrl(t); }, spoken ? 200 : 1400);
+}
+
+const NO_AI = "Je ne sais pas encore répondre à ce genre de question : mon intelligence artificielle n'est pas encore branchée. " +
+  "Par contre je t'ouvre déjà les itinéraires : dis par exemple « de Lyon Part-Dieu à Grenoble » ou « je veux aller à Massy ».";
+
+async function ask(text, opts = {}) {
   text = (text || "").trim();
   if (!text || busy) return;
   stopSpeaking();
   busy = true; send.disabled = true;
-  history.push({role: "user", content: text});
   $("chips").hidden = true;
   bubble("user", text);
   q.value = ""; grow();
+  const speakIt = opts.voice || speakBox.checked;
+
+  // 1. Un trajet ? On l'ouvre tout de suite sur la carte, sans attendre l'IA.
+  const trip = parseTrip(text);
+  if (trip) {
+    const msg = tripText(trip);
+    bubble("bot", msg, {mood: "bravo", link: {href: tripUrl(trip), label: "Voir l'itinéraire →"}});
+    history.push({role: "user", content: text}, {role: "assistant", content: msg}); store.set("lp-chat", history.slice(-20));
+    busy = false; send.disabled = false;
+    goTrip(trip, speakIt ? say(msg) : null);
+    return;
+  }
+
+  // 2. Sinon : l'IA, avec les données en direct.
+  history.push({role: "user", content: text});
   const wait = typing();
   setMood("reflexion");
-  let answer, err = false;
+  let answer, err = false, action = null;
   try {
-    if (!CFG.url) throw new Error("hors ligne");
-    const r = await fetch(`${CFG.url}/functions/v1/assistant`, {
+    if (!ENDPOINT()) throw new Error("hors ligne");
+    const r = await fetch(ENDPOINT(), {
       method: "POST",
       headers: {"Content-Type": "application/json", apikey: CFG.key},
       body: JSON.stringify({messages: history.slice(-12), trajet: trajetIn.value.trim()}),
     });
     const j = await r.json().catch(() => ({}));
-    answer = j.reply || "Je n'ai pas pu répondre, réessaie dans un instant.";
-    err = !r.ok;
+    if (r.status === 404 || (r.status === 502 && j.error === "fournisseur")) { answer = NO_AI; err = true; }
+    else { answer = j.reply || "Je n'ai pas pu répondre, réessaie dans un instant."; err = !r.ok; action = j.action; }
   } catch (e) {
-    answer = "Je n'arrive pas à joindre le copilote. Vérifie ta connexion et réessaie.";
+    answer = ENDPOINT() ? "Je n'arrive pas à joindre le copilote. Vérifie ta connexion et réessaie." : NO_AI;
     err = true;
   }
   wait.remove();
-  bubble("bot", answer, {err});
-  setMood(err ? "neutre" : moodFor(answer), 9000);
+  const trip2 = action && action.type === "itineraire" && action.arrivee ? {from: action.depart || "ma position", to: action.arrivee} : null;
+  bubble("bot", answer, {err: err && answer !== NO_AI, mood: answer === NO_AI ? "neutre" : undefined, link: trip2 ? {href: tripUrl(trip2), label: "Voir l'itinéraire →"} : null});
   if (!err) { history.push({role: "assistant", content: answer}); store.set("lp-chat", history.slice(-20)); }
   else history.pop();                          // la question pourra etre reposee
-  if (speakBox.checked && !err) say(answer);
   busy = false; send.disabled = false;
+  const spoken = speakIt ? say(answer) : null;
+  if (trip2) { goTrip(trip2, spoken); return; }
+  setMood(err ? "neutre" : moodFor(answer), 9000);
+  if (spoken && handsBox.checked && !err) spoken.then(() => { if (!leaving && !busy) startListening(); });
 }
 
 form.addEventListener("submit", (e) => { e.preventDefault(); ask(q.value); });
@@ -267,49 +344,148 @@ function pickVoice() {
 }
 if (canSpeak) { pickVoice(); speechSynthesis.addEventListener?.("voiceschanged", pickVoice); }
 else speakBox.closest("label").hidden = true;
+// Renvoie une promesse tenue quand Gus a fini de parler (ou au bout de 12 s au plus).
 function say(text) {
-  if (!canSpeak) return;
+  if (!canSpeak) return Promise.resolve();
   stopSpeaking();
-  const u = new SpeechSynthesisUtterance(text.replace(/[*_#`>]/g, "").replace(/(\d+)h(\d\d)/g, "$1 heures $2"));
-  u.lang = "fr-FR"; if (voice) u.voice = voice; u.rate = 1.05;
-  speechSynthesis.speak(u);
+  return new Promise((done) => {
+    const u = new SpeechSynthesisUtterance(text.replace(/[*_#`>«»]/g, "").replace(/(\d+)h(\d\d)/g, "$1 heures $2").replace(/→/g, " vers "));
+    u.lang = "fr-FR"; if (voice) u.voice = voice; u.rate = 1.05;
+    const t = setTimeout(done, 12000);
+    u.onend = u.onerror = () => { clearTimeout(t); done(); };
+    speechSynthesis.speak(u);
+  });
 }
 function stopSpeaking() { if (canSpeak) speechSynthesis.cancel(); }
 speakBox.checked = store.get("lp-speak") === true;
 speakBox.addEventListener("change", () => { store.set("lp-speak", speakBox.checked); if (!speakBox.checked) stopSpeaking(); });
+handsBox.checked = store.get("lp-handsfree") === true;
+handsBox.addEventListener("change", () => {
+  store.set("lp-handsfree", handsBox.checked);
+  if (handsBox.checked) { speakBox.checked = true; store.set("lp-speak", true); }
+});
 
-// ---------------------------------------------------------------- micro : reconnaissance vocale du navigateur (gratuite)
+// ---------------------------------------------------------------- micro : dictée en direct
+// 1) Dictée du navigateur (Chrome, Edge, Safari) : texte qui s'affiche pendant qu'on parle.
+// 2) Secours (Firefox, Brave, navigateurs intégrés, ou si la dictée du navigateur ne répond pas) :
+//    on enregistre jusqu'au silence, puis le serveur transcrit (ElevenLabs ou Mistral). Rien n'est gardé.
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null, listening = false;
-if (!SR) { mic.hidden = true; $("micNote").hidden = false; }
-mic.addEventListener("click", () => {
-  if (listening) { rec && rec.stop(); return; }
-  stopSpeaking();
-  rec = new SR();
-  rec.lang = "fr-FR"; rec.interimResults = true; rec.continuous = false;
-  let finalText = "";
+const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+let engine = store.get("lp-stt") === "server" && canRecord ? "server" : SR ? "browser" : canRecord ? "server" : null;
+let listening = false, stopNow = null;
+if (!engine) { mic.hidden = true; $("micNote").hidden = false; }
+
+const live = $("live"), liveTxt = $("liveTxt");
+function liveUi(on, text) {
+  listening = on;
+  live.hidden = !on && !text;
+  if (text != null) liveTxt.textContent = text;
+  live.classList.toggle("on", on);
+  mic.setAttribute("aria-pressed", String(on));
+  mic.setAttribute("aria-label", on ? "Arrêter d'écouter" : "Parler");
+  if (on) setMood("ecoute");
+}
+function liveDone(msg) {
+  liveUi(false, msg || null);
+  if (msg) setTimeout(() => { if (!listening) live.hidden = true; }, 3500); else live.hidden = true;
+  if (!busy && !leaving) setMood("content");
+}
+function heard(text) {
+  text = (text || "").trim();
+  if (!text) return liveDone("Je n'ai rien entendu. Appuie sur le micro et parle juste après.");
+  liveDone();
+  if (canSpeak && store.get("lp-speak") !== false) { speakBox.checked = true; store.set("lp-speak", true); }
+  ask(text, {voice: true});
+}
+const micBlocked = () => liveDone("Le micro est bloqué : autorise-le dans ton navigateur (icône à gauche de l'adresse), puis réessaie.");
+
+function startBrowser() {
+  const rec = new SR();
+  rec.lang = "fr-FR"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  let finalText = "", interim = "", failed = null;
   rec.onresult = (e) => {
-    let interim = "";
+    interim = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript;
     }
-    q.value = (finalText + interim).trim(); grow();
+    const now = (finalText + " " + interim).trim();
+    liveTxt.textContent = now || "Je t'écoute…"; q.value = now; grow();
   };
-  rec.onerror = (e) => {
-    if (e.error === "not-allowed" || e.error === "service-not-allowed") bubble("bot", "Le micro est bloqué : autorise-le dans ton navigateur pour parler au copilote.", {err: true});
-  };
+  rec.onerror = (e) => { failed = e.error; };
   rec.onend = () => {
-    listening = false; mic.setAttribute("aria-pressed", "false"); mic.setAttribute("aria-label", "Parler");
-    if (!busy) setMood("content");
-    if (finalText.trim()) {
-      // Qui parle veut sans doute entendre la reponse : on active la lecture (modifiable).
-      if (canSpeak && store.get("lp-speak") !== false) { speakBox.checked = true; store.set("lp-speak", true); }
-      ask(finalText);
+    stopNow = null;
+    if (failed === "not-allowed") return micBlocked();
+    if ((failed === "network" || failed === "service-not-allowed" || failed === "language-not-supported") && canRecord) {
+      // La dictée du navigateur ne marche pas ici : on passe à l'enregistrement, et on s'en souvient.
+      engine = "server"; store.set("lp-stt", "server");
+      liveUi(false, "La dictée de ce navigateur ne répond pas : je passe à l'enregistrement.");
+      return startServer();
     }
+    if (failed === "audio-capture") return liveDone("Aucun micro détecté sur cet appareil.");
+    heard(finalText || interim);
   };
-  try { rec.start(); listening = true; setMood("ecoute"); mic.setAttribute("aria-pressed", "true"); mic.setAttribute("aria-label", "Arrêter d'écouter"); }
-  catch (e) { listening = false; }
-});
+  stopNow = () => rec.stop();
+  try { rec.start(); liveUi(true, "Je t'écoute… parle maintenant."); }
+  catch (e) { stopNow = null; liveDone("Impossible de lancer la dictée, réessaie."); }
+}
+
+async function startServer() {
+  if (!ENDPOINT()) return liveDone("La dictée n'est pas disponible hors ligne. Écris ta question.");
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); }
+  catch (e) { return e && e.name === "NotFoundError" ? liveDone("Aucun micro détecté sur cet appareil.") : micBlocked(); }
+  const type = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/webm"].find((t) => MediaRecorder.isTypeSupported?.(t)) || "";
+  const mr = new MediaRecorder(stream, type ? {mimeType: type} : {});
+  const chunks = [];
+  // Détection du silence : on coupe 1,3 s après la fin de la phrase (30 s au plus).
+  const AC = window.AudioContext || window.webkitAudioContext, ac = AC ? new AC() : null;
+  const an = ac ? ac.createAnalyser() : null, buf = an ? new Float32Array(1024) : null;
+  if (ac) { an.fftSize = 1024; ac.createMediaStreamSource(stream).connect(an); }
+  let spoke = false, quiet = performance.now();
+  const t0 = performance.now();
+  const tick = () => {
+    if (mr.state !== "recording") return;
+    const now = performance.now();
+    if (an) {
+      an.getFloatTimeDomainData(buf);
+      let sum = 0; for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length);
+      live.style.setProperty("--lv", Math.min(1, rms * 12).toFixed(2));
+      if (rms > 0.02) { spoke = true; quiet = now; }
+    } else spoke = true;
+    if ((spoke && now - quiet > 1300) || now - t0 > 30000 || (!spoke && now - t0 > 8000)) mr.stop();
+    else setTimeout(tick, 60);
+  };
+  mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  mr.onstop = async () => {
+    stopNow = null;
+    stream.getTracks().forEach((t) => t.stop()); if (ac) ac.close();
+    if (!spoke || !chunks.length) return liveDone("Je n'ai rien entendu. Appuie sur le micro et parle juste après.");
+    liveUi(false, "Je transcris…"); live.hidden = false; setMood("reflexion");
+    const blob = new Blob(chunks, {type: mr.mimeType || type || "audio/webm"});
+    try {
+      const r = await fetch(ENDPOINT(), {method: "POST", headers: {"Content-Type": blob.type, apikey: CFG.key}, body: blob});
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.text) return heard(j.text);
+      if (r.status === 404 || r.status === 501) {
+        return liveDone(SR ? "La transcription n'est pas encore activée. Essaie Chrome ou Edge, ou écris ta question." : "La dictée n'est pas disponible dans ce navigateur pour l'instant : essaie Chrome, Edge ou Safari, ou écris ta question.");
+      }
+      liveDone(j.reply || "Je n'ai pas réussi à t'entendre, réessaie ou écris ta question.");
+    } catch (e) { liveDone("Je n'arrive pas à joindre le serveur. Vérifie ta connexion."); }
+  };
+  stopNow = () => { if (mr.state === "recording") mr.stop(); };
+  mr.start(250);
+  liveUi(true, "Je t'écoute… parle maintenant, je m'arrête quand tu te tais.");
+  setTimeout(tick, 200);
+}
+
+function startListening() {
+  if (listening || busy || !engine) return;
+  stopSpeaking();
+  if (engine === "browser") startBrowser(); else startServer();
+}
+mic.addEventListener("click", () => { if (listening) { stopNow && stopNow(); return; } startListening(); });
+$("liveStop").addEventListener("click", () => { if (stopNow) stopNow(); else live.hidden = true; });
 
 renderAll();
 </script>
