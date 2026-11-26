@@ -5,21 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Carte des retards · LateProof</title>
 <meta name="description" content="Ponctualité des gares en direct, ta région, ta ligne, ton trajet : grèves annoncées et travaux à venir, en France.">
-<meta name="theme-color" content="#2f6bff">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0B0C0F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23D4FF3A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%230B0C0F' stroke-width='10' stroke-linecap='round' pathLength='360' stroke-dasharray='120 360' transform='rotate(-90 32 32)'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%230B0C0F'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* Meme identite que la page d'accueil. Mise en page : barre de recherche, carte a gauche, panneau a droite. */
-:root{
-  --bg:#f4f6fa; --surface:#ffffff; --surface2:#e9eef6; --fg:#121823; --muted:#55627a; --line:#d7deea;
-  --blue:#2f6bff; --on-blue:#ffffff; --amber:#a86a00; --mint:#0d8a5f; --red:#c93439;
-  --dot-ok:#11a975; --dot-mid:#f0a000; --dot-bad:#e5484d;
-  --display:"Archivo","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; color-scheme:light;
-}
-@media (prefers-color-scheme: dark){:root{--bg:#0f1520;--surface:#18212f;--surface2:#243045;--fg:#eef3fa;--muted:#a3afc2;--line:#2c384d;
-  --blue:#6b95ff;--on-blue:#08101f;--amber:#ffb020;--mint:#35d49a;--red:#ff6b70;--dot-ok:#35d49a;--dot-mid:#ffb020;--dot-bad:#ff5a5f;color-scheme:dark}}
+:root{--bg:#0B0C0F;--surface:#17191E;--surface2:#22252B;--fg:#F4F5F0;--muted:#A7AAB2;--line:#2A2D33;--lime:#D4FF3A;--orange:#FF6A3D;--blue:#D4FF3A;--on-blue:#0B0C0F;--amber:#FF6A3D;--amber-bg:#2A1710;--mint:#D4FF3A;--red:#FF6A3D;--gold:#D4FF3A;--dot-ok:#D4FF3A;--dot-mid:#FFB547;--dot-bad:#FF6A3D;--soft:#22252B;--ok:#D4FF3A;--bad:#FF6A3D;--warn:#FF6A3D;--okfg:#D4FF3A;--display:"Manrope","Segoe UI",system-ui,sans-serif;--head:"Unbounded","Manrope",sans-serif;--mono:"Manrope","Segoe UI",system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--display)}
@@ -240,11 +233,21 @@ table.trains{width:100%;border-collapse:collapse;font-size:.84rem}
 .leaflet-popup-content{font:14px/1.45 var(--display)}.leaflet-popup-content b{font-weight:800}
 .leaflet-popup-content .btn{margin-top:6px;padding:5px 9px;font-size:.78rem}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;font-size:.88rem;z-index:2000}
+
+/* ---- Direction artistique D : lime dominant, nuit, Unbounded + Manrope ---- */
+h1,h2,h3{font-family:var(--head);letter-spacing:-.03em}
+.wm{font:800 1.12rem var(--head);letter-spacing:-.045em;color:var(--fg)}
+.brand{gap:9px}
+body{font-variant-numeric:tabular-nums}
+.btn{border-radius:999px}
+.searchbar,.quick button,.pill{font-family:var(--display)}
+.d-ok{background:var(--lime);color:#0B0C0F}.d-mid,.d-bad{background:var(--orange);color:#0B0C0F}
+.jtop .t{font-family:var(--head);letter-spacing:-.03em}
 </style>
 </head>
 <body>
 <header class="top wrap">
-  <a class="brand" href="./"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a>
+  <a class="brand" href="./"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#D4FF3A"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-opacity=".18" stroke-width="5"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round" pathLength="360" stroke-dasharray="120 360" transform="rotate(-90 32 32)"/><path d="M32 32L41.5 37.5" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="32" r="4" fill="#0B0C0F"/></svg><span class="wm">lateproof</span></a>
   <nav class="nav"><a href="app.html">Mon espace</a><a href="assistant.html">Copilote</a><a class="hide-sm" href="./#inscription" data-i18n="signup">Préinscription</a>
     <div class="lang" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true">FR</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></nav>
 </header>
@@ -564,7 +567,7 @@ REGIONS.forEach(r => regionSel.add(new Option(r.name, r.id)));
 
 // ================================================================= Carte
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+const dark = true;   // direction artistique : toujours sombre
 // Un seul calque de dessin pour lignes + gares : sinon le calque du dessus capte tous les clics.
 const map = L.map("map", {preferCanvas: true, renderer: L.canvas({tolerance: 5}), zoomSnap: .5, zoomControl: false}).setView([46.6, 2.4], 5.5);
 L.control.zoom({position: "bottomright"}).addTo(map);

@@ -7,15 +7,13 @@
 <meta name="description" content="Justificatif de retard de train vérifiable : authentique, signé par le téléphone de son titulaire, impossible à modifier.">
 <meta property="og:title" content="Justificatif de retard vérifiable · LateProof">
 <meta property="og:description" content="Ouvre le lien pour vérifier le retard en 3 secondes, sans rien installer.">
-<meta name="theme-color" content="#0d8a5f">
+<meta name="theme-color" content="#0B0C0F">
 <meta name="referrer" content="no-referrer">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23D4FF3A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%230B0C0F' stroke-width='10' stroke-linecap='round' pathLength='360' stroke-dasharray='120 360' transform='rotate(-90 32 32)'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%230B0C0F'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
-:root{--bg:#f4f6fa;--surface:#fff;--fg:#121823;--muted:#55627a;--line:#d7deea;--soft:#e9eef6;--blue:#2f6bff;--ok:#0b7a54;--bad:#b42318;--warn:#a86a00;
-  --display:"Archivo","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:light}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1520;--surface:#18212f;--fg:#eef3fa;--muted:#a3afc2;--line:#2c384d;--soft:#243045;--blue:#6b95ff;--ok:#0f7550;--bad:#b42318;--warn:#ffb020;--okfg:#35d49a;color-scheme:dark}}
+:root{--bg:#0B0C0F;--surface:#17191E;--surface2:#22252B;--fg:#F4F5F0;--muted:#A7AAB2;--line:#2A2D33;--lime:#D4FF3A;--orange:#FF6A3D;--blue:#D4FF3A;--on-blue:#0B0C0F;--amber:#FF6A3D;--amber-bg:#2A1710;--mint:#D4FF3A;--red:#FF6A3D;--gold:#D4FF3A;--dot-ok:#D4FF3A;--dot-mid:#FFB547;--dot-bad:#FF6A3D;--soft:#22252B;--ok:#D4FF3A;--bad:#FF6A3D;--warn:#FF6A3D;--okfg:#D4FF3A;--display:"Manrope","Segoe UI",system-ui,sans-serif;--head:"Unbounded","Manrope",sans-serif;--mono:"Manrope","Segoe UI",system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--display)}
 :focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
@@ -23,11 +21,11 @@ a{color:var(--blue)}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.05rem;color:var(--fg);text-decoration:none}.brand b{color:var(--blue)}
 .code{font:600 .8rem var(--mono);color:var(--muted)}
-.banner{color:#fff;padding:22px 16px 20px}
+.banner{color:#0B0C0F;padding:22px 16px 20px}
 .banner .in{max-width:560px;margin:0 auto;display:grid;gap:6px}
 .banner h1{display:flex;align-items:center;gap:10px;margin:0;font-size:1.55rem;letter-spacing:-.01em}
 .banner p{margin:0;opacity:.95;font-size:.95rem}
-.ok{background:var(--ok)}.bad{background:var(--bad)}.wait{background:#4a5568}   /* texte blanc : contraste AA dans les deux themes */
+.ok{background:#D4FF3A;color:#0B0C0F}.bad{background:#FF6A3D;color:#0B0C0F}.wait{background:#2A2D33;color:#F4F5F0}   /* texte blanc : contraste AA dans les deux themes */
 main{max-width:560px;margin:0 auto;padding:18px 16px 40px;display:grid;gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
 .kicker{font:700 .7rem var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
@@ -47,10 +45,23 @@ details .in{padding:0 16px 14px;display:grid;gap:8px;font-size:.92rem}
 .intro{background:var(--soft);border-radius:14px;padding:14px 16px;display:grid;gap:8px;font-size:.93rem}
 .foot{text-align:center;font-size:.8rem;color:var(--muted)}
 code{font:500 .78rem var(--mono);overflow-wrap:anywhere}
+
+/* ---- Direction artistique D : lime dominant, nuit, Unbounded + Manrope ---- */
+h1,h2,h3{font-family:var(--head);letter-spacing:-.03em}
+.wm{font:800 1.12rem var(--head);letter-spacing:-.045em;color:var(--fg)}
+.brand{gap:9px}
+body{font-variant-numeric:tabular-nums}
+.btn{border-radius:999px}
+.card{border-radius:22px}
+.big b{font-family:var(--head);letter-spacing:-.05em;color:var(--orange)}
+.leg .r{color:var(--orange)}.leg .r.okc{color:var(--lime)}
+.total span:last-child{color:var(--orange)!important}
+.check i{color:var(--lime)}.check i.w,.check i.x{color:var(--orange)}
+.banner h1{font-family:var(--head);letter-spacing:-.03em}
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="./"><svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a><span class="code" id="code"></span></header>
+<header class="top"><a class="brand" href="./"><svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#D4FF3A"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-opacity=".18" stroke-width="5"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round" pathLength="360" stroke-dasharray="120 360" transform="rotate(-90 32 32)"/><path d="M32 32L41.5 37.5" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="32" r="4" fill="#0B0C0F"/></svg><span class="wm">lateproof</span></a><span class="code" id="code"></span></header>
 <section class="banner wait" id="banner" aria-live="polite"><div class="in"><h1 id="bTitle">Vérification…</h1><p id="bSub">Contrôle de la signature et du sceau, directement dans ce navigateur.</p></div></section>
 <main id="main"></main>
 
@@ -59,8 +70,8 @@ code{font:500 .78rem var(--mono);overflow-wrap:anywhere}
 <script>
 "use strict";
 const {fmt, esc} = LP, $ = id => document.getElementById(id);
-const ICON_OK = `<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fff"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ok)"/></svg>`;
-const ICON_BAD = `<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fff"/><path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--bad)" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+const ICON_OK = `<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#0B0C0F"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#D4FF3A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_BAD = `<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#0B0C0F"/><path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="#FF6A3D" stroke-width="2.6" stroke-linecap="round"/></svg>`;
 const LABELS = {trains: "Trains", arrivee: "Gare d'arrivée", depart: "Gare de départ", etapes: "Détail par étape", checkin: "Heure du check-in", presence: "Présence",
   titulaire: "Titulaire", releves: "Relevés officiels du retard", date: "Date", retard_min: "Retard", arrivee_prevue: "Arrivée prévue", arrivee_reelle: "Arrivée réelle", declare: "Heure prévue"};
 
@@ -92,7 +103,7 @@ async function main() {
   let legs = []; try { legs = JSON.parse(F.etapes || "[]"); } catch (e) {}
   const sig = chk.signature, browserKey = sig.kind === "browser";
   $("main").innerHTML = `
-    ${seenIntro() ? "" : `<div class="intro" id="intro"><b>En 15 secondes</b><span>Cette page vérifie un justificatif de retard de train. Le retard vient des données officielles SNCF et Île-de-France Mobilités. Le justificatif a été signé par le téléphone de son titulaire au moment des faits : s'il avait été modifié, cette page s'afficherait en rouge.</span><button class="btn" id="gotit">Compris</button></div>`}
+    ${seenIntro() ? "" : `<div class="intro" id="intro"><b>En 15 secondes</b><span>Cette page vérifie un justificatif de retard de train. Le retard vient des données officielles SNCF et Île-de-France Mobilités. Le justificatif a été signé par le téléphone de son titulaire au moment des faits : s'il avait été modifié, cette page s'afficherait en orange.</span><button class="btn" id="gotit">Compris</button></div>`}
     <section class="card"><span class="kicker">${esc(day)}${legs.length > 1 ? ` · trajet en ${legs.length} étapes` : ""}</span>
       <div class="big"><b>+${delay}</b><span><b style="font:inherit;color:inherit">min</b> de retard${legs.length > 1 ? " au total" : ""}</span></div>
       ${F.arrivee_prevue && F.arrivee_reelle ? `<span>Arrivée prévue <b>${fmt.time(+F.arrivee_prevue)}</b>${F.arrivee ? ` à ${esc(F.arrivee)}` : ""}, arrivée réelle <b>${fmt.time(+F.arrivee_reelle)}</b>.</span>` : ""}
@@ -106,7 +117,7 @@ async function main() {
     <section class="card">
       <div class="check"><i aria-hidden="true">✓</i><span>${F.presence ? `<b>${esc(F.presence.split(" : ")[0])}</b> : ${esc(F.presence.split(" : ").slice(1).join(" : "))}` : "Présence non communiquée"}${F.checkin ? ` (check-in à ${fmt.time(+F.checkin)})` : ""}.</span></div>
       <div class="check"><i aria-hidden="true" class="${browserKey ? "w" : ""}">${browserKey ? "!" : "✓"}</i><span>${browserKey ? "Signé par <b>la clé du navigateur</b> de son titulaire (sans déverrouillage par visage ou empreinte)." : `Signé par <b>le téléphone de son titulaire</b>${sig.userVerified ? ", déverrouillé par visage, empreinte ou code" : ""}.`}${F.titulaire ? ` Titulaire : <b>${esc(F.titulaire)}</b>.` : ""}</span></div>
-      <div class="check"><i aria-hidden="true">✓</i><span>Scellé le ${new Date(c.at * 1000).toLocaleString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris"})} : <b>impossible à modifier</b> sans que cette page passe au rouge.</span></div>
+      <div class="check"><i aria-hidden="true">✓</i><span>Scellé le ${new Date(c.at * 1000).toLocaleString("fr-FR", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris"})} : <b>impossible à modifier</b> sans que cette page passe à l'orange.</span></div>
       <div class="check" id="cross"><i aria-hidden="true" class="w">…</i><span>Comparaison avec les relevés officiels…</span></div>
       ${hidden.length ? `<div class="check"><i aria-hidden="true" class="w">◦</i><span class="muted">Non montré par le titulaire, mais scellé : ${esc(hidden.join(", "))}.</span></div>` : ""}
     </section>

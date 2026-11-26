@@ -5,18 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mon espace · LateProof</title>
 <meta name="description" content="Tes trajets, le retard en direct, ton justificatif de retard infalsifiable et tes droits, au même endroit.">
-<meta name="theme-color" content="#2f6bff">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0B0C0F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23D4FF3A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%230B0C0F' stroke-width='10' stroke-linecap='round' pathLength='360' stroke-dasharray='120 360' transform='rotate(-90 32 32)'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%230B0C0F'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
-:root{
-  --bg:#f4f6fa; --surface:#ffffff; --surface2:#e9eef6; --fg:#121823; --muted:#55627a; --line:#d7deea;
-  --blue:#2f6bff; --on-blue:#ffffff; --amber:#a86a00; --amber-bg:#fff7e0; --mint:#0d8a5f; --red:#c93439; --gold:#b98900;
-  --display:"Archivo","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; color-scheme:light;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1520;--surface:#18212f;--surface2:#243045;--fg:#eef3fa;--muted:#a3afc2;--line:#2c384d;
-  --blue:#6b95ff;--on-blue:#08101f;--amber:#ffb020;--amber-bg:#2a2210;--mint:#35d49a;--red:#ff6b70;--gold:#ffcf4a;color-scheme:dark}}
+:root{--bg:#0B0C0F;--surface:#17191E;--surface2:#22252B;--fg:#F4F5F0;--muted:#A7AAB2;--line:#2A2D33;--lime:#D4FF3A;--orange:#FF6A3D;--blue:#D4FF3A;--on-blue:#0B0C0F;--amber:#FF6A3D;--amber-bg:#2A1710;--mint:#D4FF3A;--red:#FF6A3D;--gold:#D4FF3A;--dot-ok:#D4FF3A;--dot-mid:#FFB547;--dot-bad:#FF6A3D;--soft:#22252B;--ok:#D4FF3A;--bad:#FF6A3D;--warn:#FF6A3D;--okfg:#D4FF3A;--display:"Manrope","Segoe UI",system-ui,sans-serif;--head:"Unbounded","Manrope",sans-serif;--mono:"Manrope","Segoe UI",system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--display);padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
@@ -104,21 +98,42 @@ h2{font-size:1.05rem;margin:0}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+/* ---- Direction artistique D : lime dominant, nuit, Unbounded + Manrope ---- */
+h1,h2,h3{font-family:var(--head);letter-spacing:-.03em}
+.wm{font:800 1.12rem var(--head);letter-spacing:-.045em;color:var(--fg)}
+.brand{gap:9px}
+body{font-variant-numeric:tabular-nums}
+.btn,.btn.big{border-radius:999px}
+.card{border-radius:22px}
+.item{border-radius:18px}
+.big-num b{font-family:var(--head);letter-spacing:-.05em}
+.big-num b.ok{color:var(--lime)}
+.d-ok{background:var(--lime);color:#0B0C0F}.d-mid,.d-bad{background:var(--orange);color:#0B0C0F}
+.card.hero{background:var(--surface);border-color:var(--surface)}
+.kicker{font-family:var(--display);font-weight:800}
+.tabs{background:var(--bg);border-top:0;padding:0 12px calc(10px + env(safe-area-inset-bottom,0px))}
+.tabs nav{background:var(--surface);border-radius:30px;padding:6px;gap:4px}
+.tabs a{border-radius:24px;padding:8px 4px}
+.tabs a[aria-current="page"]{background:var(--lime);color:#0B0C0F}
+.tabs a svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.switch input:checked+span::after{background:#0B0C0F}
+.steps span.on{border-color:var(--lime)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="#/"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Late<b>Proof</b></span></a>
+    <a class="brand" href="#/"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#D4FF3A"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-opacity=".18" stroke-width="5"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round" pathLength="360" stroke-dasharray="120 360" transform="rotate(-90 32 32)"/><path d="M32 32L41.5 37.5" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="32" r="4" fill="#0B0C0F"/></svg><span class="wm">lateproof</span></a>
     <nav class="nav"><a href="carte.html">Carte</a><a href="assistant.html">Copilote</a></nav>
   </header>
   <main id="view" class="stack" aria-live="polite"></main>
 </div>
 <div class="tabs"><nav aria-label="Navigation principale">
-  <a href="#/" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Aujourd'hui</a>
-  <a href="#/voyages" data-tab="voyages"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11h14M8 21l2-4m6 4l-2-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Voyages</a>
-  <a href="#/justificatifs" data-tab="certs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Justificatifs</a>
-  <a href="#/profil" data-tab="profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Profil</a>
+  <a href="#/" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8.5a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg>Aujourd'hui</a>
+  <a href="#/voyages" data-tab="voyages"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="14" rx="4"/><path d="M5 11h14M8 21l2-4M16 21l-2-4"/></svg>Voyages</a>
+  <a href="#/justificatifs" data-tab="certs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.2-7 10-4-1.8-7-5.4-7-10V6z"/><circle cx="12" cy="11.5" r="3"/><path d="M12 11.5l1.6 1"/></svg>Justificatifs</a>
+  <a href="#/profil" data-tab="profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-4 4.2-6 8-6s6.8 2 8 6"/></svg>Profil</a>
 </nav></div>
 
 <script src="config.js"></script>
