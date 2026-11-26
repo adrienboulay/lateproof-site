@@ -1547,6 +1547,14 @@ async function placeFromText(t) {
     const p = await currentPos(); return p ? resolvePoint(p.lat, p.lon, L_().myPos) : null;
   }
   const looksAddress = /\d|\b(rue|avenue|av\.|boulevard|bd|place|chemin|allée|impasse|quai|route|cours)\b/i.test(q);
+  if (!looksAddress) {
+    // Nom exact (« Grenoble »), sinon la gare la plus fréquentée dont le nom commence par ce mot (« Lyon » -> Lyon Part-Dieu).
+    const nq = norm(q), busiest = arr => arr.sort((x, y) => (y.n || 0) - (x.n || 0))[0];
+    const exact = busiest(stations.filter(s => norm(s.name) === nq) .slice());
+    if (exact) return exact;
+    const pre = busiest(stations.filter(s => norm(s.name).startsWith(nq + " ")));
+    if (pre) return pre;
+  }
   const st = looksAddress ? null : suggest(q.replace(/^(la |le |l')?gare (de |du |d')?(?=\S+ )/i, ""), "station")[0] || suggest(q, "station")[0];
   if (st && st.s >= 2) return st.st;
   const g = (await geocode(q))[0];
