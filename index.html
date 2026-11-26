@@ -3,146 +3,215 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LateProof</title>
-<meta name="description" content="Ton assistant retards de train : prévenu avant, justifié pendant, remboursé après.">
-<meta property="og:title" content="LateProof · Delays happen. The hassle doesn't.">
-<meta property="og:description" content="Prévenu avant, justifié pendant, remboursé après. Inscris-toi pour être prévenu du lancement.">
-<meta name="theme-color" content="#2f6bff">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>LateProof · Le retard, prouvé</title>
+<meta name="description" content="Ton copilote quand le train déraille : retards en direct, plan B, et un justificatif de retard que ton manager vérifie en 3 secondes, sans appli.">
+<meta property="og:title" content="LateProof · Le retard, prouvé">
+<meta property="og:description" content="Retards en direct, plan B, et un justificatif vérifiable en 3 secondes.">
+<meta name="theme-color" content="#0B0C0F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23D4FF3A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%230B0C0F' stroke-width='10' stroke-linecap='round' pathLength='360' stroke-dasharray='120 360' transform='rotate(-90 32 32)'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%230B0C0F'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
-/* Identite LateProof : bleu signal (marque), ambre quai (retard), menthe (paye/verifie), rouge (probleme).
-   Mise en page : un ticket central (inscription) + un tableau des departs vivant (chiffres du jour). */
-:root{
-  --bg:#f4f6fa; --surface:#ffffff; --surface2:#e9eef6; --fg:#121823; --muted:#55627a; --line:#d7deea;
-  --blue:#2f6bff; --on-blue:#ffffff; --amber:#a86a00; --mint:#0d8a5f; --red:#c93439;
-  --board:#0f1520; --board-ink:#eef3fa; --board-amber:#ffb020; --board-mint:#35d49a;
-  --display:"Archivo","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
-  color-scheme:light;
-}
-@media (prefers-color-scheme: dark){:root{
-  --bg:#0f1520; --surface:#18212f; --surface2:#243045; --fg:#eef3fa; --muted:#a3afc2; --line:#2c384d;
-  --blue:#6b95ff; --on-blue:#08101f; --amber:#ffb020; --mint:#35d49a; --red:#ff6b70; --board:#070b11; color-scheme:dark}}
+:root{--bg:#0B0C0F;--surface:#17191E;--surface2:#22252B;--fg:#F4F5F0;--muted:#A7AAB2;--line:#2A2D33;--lime:#D4FF3A;--orange:#FF6A3D;
+  --display:"Manrope","Segoe UI",system-ui,sans-serif;--head:"Unbounded","Manrope",sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--display);-webkit-font-smoothing:antialiased}
-.wrap{max-width:1120px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
-a{color:var(--blue)}
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
-/* En-tete */
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.3rem;letter-spacing:-.02em;color:var(--fg);text-decoration:none}
-.brand b{color:var(--blue)}
-.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
-.lang button{border:0;background:none;color:var(--muted);font:600 .85rem var(--mono);padding:7px 12px;cursor:pointer}
-.lang button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue)}
-/* Hero : promesse a gauche, ticket d'inscription a droite */
-.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:start;padding-block:28px 40px}
-.eyebrow{font:700 .78rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
-h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.04;letter-spacing:-.035em;margin:.3em 0 .35em;font-weight:800;text-wrap:balance}
-h1 em{font-style:normal;color:var(--blue)}
-.lede{font-size:1.15rem;color:var(--muted);max-width:34rem;margin:0 0 22px}
-.promises{display:grid;gap:10px;margin:0;padding:0;list-style:none}
-.promises li{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:baseline}
-.pill{font:700 .74rem var(--mono);letter-spacing:.08em;padding:5px 8px;border-radius:6px;text-align:center}
-.p-before{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
-.p-during{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}
-.p-after{background:color-mix(in srgb,var(--mint) 16%,transparent);color:var(--mint)}
-/* Le ticket */
-.ticket{position:relative;background:var(--surface);border-radius:20px;padding:26px 26px 22px;box-shadow:0 1px 0 var(--line),0 18px 40px -22px rgba(15,21,32,.45)}
-.ticket::before,.ticket::after{content:"";position:absolute;top:96px;width:22px;height:22px;border-radius:50%;background:var(--bg)}
-.ticket::before{left:-11px}.ticket::after{right:-11px}
-.ticket h2{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}
-.ticket .sub{margin:0 0 26px;color:var(--muted);font-size:.95rem}
-.perf{border:0;border-top:2px dashed var(--line);margin:0 -26px 18px}
-form{display:grid;gap:12px}
-label{font-weight:600;font-size:.9rem;display:grid;gap:6px}
-input[type=email],input[type=text],select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:.84rem;color:var(--muted)}
-.check input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--blue)}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 var(--display);font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--lime);outline-offset:3px;border-radius:8px}
+a{color:var(--lime)}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--head);letter-spacing:-.04em;line-height:1.05;margin:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:16px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--fg);text-decoration:none;font:800 1.2rem var(--head);letter-spacing:-.045em}
+.nav{display:flex;align-items:center;gap:18px}
+.nav a{color:var(--muted);font-weight:700;text-decoration:none}.nav a:hover{color:var(--fg)}
+.lang{display:inline-flex;border-radius:999px;background:var(--surface);padding:3px}
+.lang button{border:0;background:none;color:var(--muted);font:800 .8rem var(--display);padding:6px 11px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--lime);color:#0B0C0F}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:0 26px;border-radius:999px;font:800 1rem var(--display);text-decoration:none;border:0;cursor:pointer}
+.btn.lime{background:var(--lime);color:#0B0C0F}
+.btn.line{border:2px solid #3A3D44;color:var(--fg);background:none}
+.btn:disabled{opacity:.5;cursor:default}
+.kick{font:800 .78rem var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--lime)}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;align-items:center;padding-block:48px 56px}
+.hero h1{font-size:clamp(2.6rem,6.2vw,4.8rem);letter-spacing:-.055em}
+.hero h1 em{font-style:normal;color:var(--lime)}
+.lede{font-size:1.2rem;color:#C9CCD3;margin:22px 0 30px;max-width:34rem}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.dial{position:relative;aspect-ratio:1;max-width:440px;width:100%;justify-self:center;border-radius:28%;background:var(--lime);display:grid;place-items:center}
+.dial svg{width:76%;height:76%}
+.dial .arc{stroke-dasharray:0 360;animation:arc 3.2s cubic-bezier(.2,.8,.2,1) .4s forwards}
+.dial .count{position:absolute;right:-6%;bottom:8%;background:var(--orange);color:#0B0C0F;border-radius:999px;padding:10px 20px;font:800 clamp(1.3rem,2.6vw,2rem) var(--head);letter-spacing:-.05em;box-shadow:0 10px 30px rgb(0 0 0/.35)}
+@keyframes arc{to{stroke-dasharray:120 360}}
+
+.board{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin-bottom:72px}
+.board .lbl{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:20px 24px;border-radius:24px;background:var(--surface);min-width:230px}
+.board .lbl span{color:var(--muted);font-size:.9rem}
+.stat{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:20px 24px;border-radius:24px;background:var(--surface)}
+.stat b{font:800 clamp(1.9rem,3.4vw,2.8rem) var(--head);letter-spacing:-.05em;line-height:1}
+.stat.o b{color:var(--orange)}
+.stat span{color:var(--muted);font-size:.95rem}
+
+section{margin-bottom:80px}
+.sh{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;max-width:44rem}
+.sh h2{font-size:clamp(1.9rem,3.6vw,2.8rem)}
+.sh p{margin:0;color:#C9CCD3;font-size:1.08rem}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.pill3{display:flex;flex-direction:column;gap:14px;padding:26px;border-radius:28px;background:var(--surface)}
+.pill3 .tag{align-self:flex-start;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;font:800 .8rem var(--display);letter-spacing:.08em}
+.pill3 h3{font-size:1.45rem}
+.pill3 p{margin:0;color:#C9CCD3}
+.pill3 svg{width:34px;height:34px;fill:none;stroke:var(--fg);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.demo{display:grid;grid-template-columns:340px minmax(0,1fr);gap:48px;align-items:center}
+.phone{border-radius:44px;background:#000;padding:12px;box-shadow:0 30px 80px rgb(0 0 0/.5)}
+.screen{border-radius:34px;background:var(--bg);min-height:560px;padding:22px 16px;display:flex;flex-direction:column;gap:12px}
+.screen .hd{display:flex;align-items:center;gap:8px;font:800 1rem var(--head);letter-spacing:-.04em;margin-bottom:4px}
+.card{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:22px;background:var(--surface);transition:opacity .35s,transform .35s}
+.card.hide{opacity:0;transform:translateY(10px)}
+.card .t{font-size:.8rem;color:var(--muted);font-weight:700}
+.card b{font-size:1.02rem}
+.card .chip{align-self:flex-start;display:inline-flex;height:30px;align-items:center;padding:0 12px;border-radius:999px;font:800 .86rem var(--display)}
+.card.lime{background:var(--lime);color:#0B0C0F}.card.lime .t{color:#2B3300}
+.chip.o{background:var(--orange);color:#0B0C0F}.chip.k{background:#0B0C0F;color:var(--lime)}
+.steps{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:10px}
+.steps li{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:20px;color:var(--muted);transition:background .25s,color .25s}
+.steps li.on{background:var(--surface);color:var(--fg)}
+.steps .n{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--surface2);font:800 1rem var(--head)}
+.steps li.on .n{background:var(--lime);color:#0B0C0F}
+
+.biz{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;padding:36px;border-radius:32px;background:var(--lime);color:#0B0C0F}
+.biz h2{font-size:clamp(1.7rem,3.2vw,2.4rem)}
+.biz p{margin:10px 0 0;font-size:1.05rem;max-width:40rem}
+.biz .btn{background:#0B0C0F;color:var(--fg)}
+
+.signup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;padding:36px;border-radius:32px;background:var(--surface)}
+form{display:grid;gap:14px}
+label{display:grid;gap:6px;font-size:.9rem;font-weight:700;color:#C9CCD3}
+input,select{font:500 1rem var(--display);color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:13px 14px;width:100%}
+input:focus,select:focus{border-color:var(--lime);outline:none}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.check{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;font-weight:500;color:var(--muted)}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--lime)}
 .hp{position:absolute;left:-9999px}
-button.cta{font:800 1.02rem var(--display);background:var(--blue);color:var(--on-blue);border:0;border-radius:12px;padding:14px;cursor:pointer}
-button.cta:disabled{opacity:.6;cursor:wait}
-.msg{font-size:.92rem;margin:0;min-height:1.4em}
-.msg.ok{color:var(--mint);font-weight:600}.msg.err{color:var(--red)}
-.count{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.88rem;color:var(--muted)}
-.count b{font:700 1rem var(--mono);color:var(--fg);font-variant-numeric:tabular-nums}
-/* Le tableau des departs : chiffres du jour */
-.board{background:var(--board);color:var(--board-ink);border-radius:16px;padding:20px 22px;margin-block:8px 48px;display:grid;grid-template-columns:auto 1fr;gap:6px 26px;align-items:center}
-.board .title{grid-column:1/-1;font:700 .76rem var(--mono);letter-spacing:.14em;color:#8b98ad;text-transform:uppercase;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.board .v{font:700 clamp(1.6rem,3.4vw,2.4rem) var(--mono);font-variant-numeric:tabular-nums;text-align:right}
-.board .k{font-size:1rem}
-.v.amber{color:var(--board-amber)}.v.mint{color:var(--board-mint)}
-.live{display:inline-flex;align-items:center;gap:6px}.live i{width:8px;height:8px;border-radius:50%;background:var(--board-mint);animation:blink 1.6s infinite}
-@keyframes blink{50%{opacity:.25}}
-/* Pre-demo */
-section{padding-block:8px 48px}
-h3{font-size:clamp(1.5rem,3vw,2rem);letter-spacing:-.025em;margin:0 0 6px;text-wrap:balance}
-.section-lede{color:var(--muted);margin:0 0 24px;max-width:40rem}
-.demo{display:grid;grid-template-columns:320px 1fr;gap:34px;align-items:center}
-.phone{width:300px;max-width:100%;aspect-ratio:300/600;background:#05080d;border-radius:38px;padding:14px;margin-inline:auto;box-shadow:0 20px 50px -25px rgba(0,0,0,.6)}
-.screen{height:100%;background:#18212f;border-radius:26px;padding:18px 16px;color:#eef3fa;display:flex;flex-direction:column;gap:12px;overflow:hidden}
-.screen .h{font-weight:800;font-size:1.1rem}
-.card{background:#243045;border-radius:14px;padding:12px 14px;font-size:.92rem;display:grid;gap:4px;transition:opacity .4s,transform .4s}
-.card.hide{opacity:0;transform:translateY(12px)}
-.card .t{font:700 .78rem var(--mono);color:#8b98ad}
-.chip{display:inline-block;font:700 .78rem var(--mono);padding:3px 8px;border-radius:6px;background:#ffb020;color:#1b1300;justify-self:start}
-.chip.ok{background:#35d49a;color:#04140d}
-.big{font:800 2rem var(--display);color:#35d49a}
-.steps{list-style:none;margin:0 0 20px;padding:0;display:grid;gap:10px}
-.steps li{display:flex;gap:12px;align-items:flex-start;color:var(--muted)}
-.steps li.on{color:var(--fg)}
-.steps .n{font:700 .8rem var(--mono);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);flex:none}
-.steps li.on .n{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
-.ghost{font:700 .95rem var(--display);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:11px 16px;cursor:pointer}
-.note{font-size:.82rem;color:var(--muted);margin-top:12px}
-/* FAQ */
+.msg{min-height:1.4em;margin:0;font-weight:700}.msg.ok{color:var(--lime)}.msg.err{color:var(--orange)}
+.count{color:var(--muted);font-size:.95rem}
+
 .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-summary{font-weight:700;cursor:pointer}
-details p{margin:.6em 0 0;color:var(--muted);font-size:.95rem}
-footer{border-top:1px solid var(--line);padding-block:22px 34px;color:var(--muted);font-size:.85rem;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
-@media (max-width:860px){.hero,.demo{grid-template-columns:1fr}.faq{grid-template-columns:1fr}.board{grid-template-columns:auto 1fr}}
-@media (max-width:420px){.row{grid-template-columns:1fr}.promises li{grid-template-columns:84px 1fr}}
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+details{background:var(--surface);border-radius:22px;padding:18px 22px}
+summary{font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::after{content:"+";color:var(--lime);font:800 1.2rem var(--head)}
+details[open] summary::after{content:"–"}
+summary::-webkit-details-marker{display:none}
+details p{margin:.7em 0 0;color:#C9CCD3}
+footer{border-top:1px solid var(--line);padding-block:26px 40px;color:var(--muted);font-size:.9rem;display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-between}
+@media (max-width:900px){.hero,.demo,.signup,.biz{grid-template-columns:1fr}.three,.faq{grid-template-columns:1fr}.board{grid-template-columns:1fr 1fr}.board .lbl{grid-column:1/-1}.dial{max-width:300px}.nav a.hs{display:none}}
+@media (max-width:480px){.row{grid-template-columns:1fr}.board{grid-template-columns:1fr}.phone{max-width:320px;margin:0 auto}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.dial .arc{stroke-dasharray:120 360}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="#" aria-label="LateProof">
-      <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="var(--blue)"/><path d="M18 33l9 9 19-21" fill="none" stroke="var(--on-blue)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Late<b>Proof</b></span>
+    <a class="brand" href="./" aria-label="LateProof">
+      <svg width="36" height="36" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#D4FF3A"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-opacity=".18" stroke-width="5"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round" pathLength="360" stroke-dasharray="120 360" transform="rotate(-90 32 32)"/><path d="M32 32L41.5 37.5" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="32" r="4" fill="#0B0C0F"/></svg>
+      lateproof
     </a>
-    <div class="lang" role="group" aria-label="Langue / Language">
-      <button type="button" data-lang="fr" aria-pressed="true">FR</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
-    </div>
+    <nav class="nav" aria-label="Navigation">
+      <a class="hs" href="carte.html" data-i18n="navMap">Carte</a>
+      <a class="hs" href="assistant.html" data-i18n="navCopilot">Copilote</a>
+      <a href="app.html" data-i18n="navApp">Mon espace</a>
+      <div class="lang" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true">FR</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
+    </nav>
   </header>
 
   <main>
     <div class="hero">
       <div>
-        <h1 data-i18n-html="h1">Ton train est en retard. <em>Toi, tu n'as rien à faire.</em></h1>
-        <p class="lede" data-i18n="lede">LateProof est ton assistant retards. Dès 1 € par mois, il s'occupe de tout, automatiquement.</p>
-        <ul class="promises">
-          <li><span class="pill p-before" data-i18n="before">AVANT</span><span data-i18n="beforeTxt">Il te prévient si ton train est annoncé en retard, et te trouve un plan B.</span></li>
-          <li><span class="pill p-during" data-i18n="during">PENDANT</span><span data-i18n="duringTxt">Il envoie un justificatif infalsifiable à ton employeur ou ton école, avant même que tu arrives.</span></li>
-          <li><span class="pill p-after" data-i18n="after">APRÈS</span><span data-i18n="afterTxt">Il te rembourse automatiquement, et récupère l'argent que ta Région te doit déjà.</span></li>
-        </ul>
+        <span class="kick" data-i18n="kick">Trains, RER, Transilien · France</span>
+        <h1 data-i18n-html="h1" style="margin-top:14px">Le train déraille. <em>Pas ta journée.</em></h1>
+        <p class="lede" data-i18n="lede">LateProof suit ton trajet en direct, te donne le plan B avant tout le monde, et prouve ton retard avec un simple lien que ton manager vérifie en 3 secondes, sans rien installer.</p>
+        <div class="ctas">
+          <a class="btn lime" href="app.html" data-i18n="cta1">Ouvrir l'appli</a>
+          <a class="btn line" href="#nouveautes" data-i18n="cta2">Être prévenu des nouveautés</a>
+        </div>
       </div>
+      <div class="dial" role="img" aria-label="Le logo LateProof : l'aiguille dépasse l'heure prévue, l'arc mesure le retard">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-opacity=".18" stroke-width="5"/><circle class="arc" cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round" pathLength="360" transform="rotate(-90 32 32)"/><path d="M32 32L32 21" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 32 32;120 32 32" dur="3.2s" begin="0.4s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .8 .2 1"/></path><circle cx="32" cy="32" r="4" fill="#0B0C0F"/></svg>
+        <span class="count" aria-hidden="true">+27 min</span>
+      </div>
+    </div>
 
-      <div class="ticket" id="inscription">
-        <h2 data-i18n="formTitle">Préviens-moi du lancement</h2>
-        <p class="sub" data-i18n="formSub">Un seul email, le jour où LateProof est disponible. Rien d'autre.</p>
-        <hr class="perf">
+    <div class="board" aria-live="off">
+      <div class="lbl"><b data-i18n="boardTitle">Aujourd'hui en France</b><span><span data-i18n="boardSub">relevé toutes les 2 min</span> · <span id="updated">—</span></span></div>
+      <div class="stat"><b id="sTrains">—</b><span data-i18n="sTrains">trains suivis</span></div>
+      <div class="stat o"><b id="sLate">—</b><span data-i18n="sLate">en retard de 15 min ou plus</span></div>
+      <div class="stat o"><b id="sCanc">—</b><span data-i18n="sCanc">supprimés</span></div>
+    </div>
+
+    <section aria-labelledby="t3">
+      <div class="sh"><span class="kick" data-i18n="k3">Ce que fait LateProof</span><h2 id="t3" data-i18n="h3">Avant, pendant, après le retard.</h2></div>
+      <div class="three">
+        <article class="pill3">
+          <span class="tag" style="background:var(--lime);color:#0B0C0F" data-i18n="before">AVANT</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+          <h3 data-i18n="bT">L'alerte et le plan B</h3>
+          <p data-i18n="bP">Grève annoncée, train supprimé, correspondance compromise : tu es prévenu, et le copilote te dit quel train prendre à la place.</p>
+        </article>
+        <article class="pill3">
+          <span class="tag" style="background:var(--orange);color:#0B0C0F" data-i18n="during">PENDANT</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="11" height="18" rx="2.5"/><path d="M2 12h9M8 9l3 3-3 3"/></svg>
+          <h3 data-i18n="dT">Un geste à bord</h3>
+          <p data-i18n="dP">« Je suis à bord » : LateProof sait quel train tu prends et suit son retard minute par minute, même avec des correspondances.</p>
+        </article>
+        <article class="pill3">
+          <span class="tag" style="background:var(--fg);color:#0B0C0F" data-i18n="after">APRÈS</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.2-7 10-4-1.8-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          <h3 data-i18n="aT">La preuve, sans discussion</h3>
+          <p data-i18n="aP">Un justificatif signé par ton téléphone, comparé aux données officielles. Ton manager ou ton prof le vérifie en 3 secondes. Et on te dit à quoi tu as droit.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="tDemo">
+      <div class="sh"><span class="kick" data-i18n="kDemo">Essaie</span><h2 id="tDemo" data-i18n="demoTitle">Une matinée avec LateProof.</h2><p data-i18n="demoLede">Appuie sur « Étape suivante » pour suivre un trajet, du quai jusqu'au justificatif.</p></div>
+      <div class="demo">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="hd"><svg width="24" height="24" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="#D4FF3A"/><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="6" stroke-linecap="round" pathLength="360" stroke-dasharray="120 360" transform="rotate(-90 32 32)"/></svg>lateproof</div>
+          <div class="card" id="c1"><span class="t">07:59 · Lyon Part-Dieu</span><b data-i18n="c1">À bord : TER 8h12 vers Grenoble</b></div>
+          <div class="card hide" id="c2"><span class="t">08:20</span><b data-i18n="c2">Ton train prend du retard</b><span class="chip o">+27 min</span></div>
+          <div class="card lime hide" id="c3"><span class="t" data-i18n="c3t">LE COPILOTE</span><b data-i18n="c3">Ta correspondance est perdue. Prends le 9h04, voie B.</b></div>
+          <div class="card hide" id="c4"><span class="t">09:41</span><b data-i18n="c4">Justificatif envoyé à ton manager</b><span class="chip k" data-i18n="c4c">Vérifié</span></div>
+        </div></div>
+        <div>
+          <ol class="steps" id="steps">
+            <li class="on"><span class="n">1</span><span data-i18n="s1">Sur le quai, un geste : LateProof sait quel train tu prends. Ta position ne quitte pas ton téléphone.</span></li>
+            <li><span class="n">2</span><span data-i18n="s2">Le retard est relevé en direct, à partir des données officielles SNCF et Île-de-France Mobilités.</span></li>
+            <li><span class="n">3</span><span data-i18n="s3">Le copilote calcule ton plan B avant même que la correspondance soit ratée.</span></li>
+            <li><span class="n">4</span><span data-i18n="s4">Le justificatif part en un lien. Il est scellé : s'il était retouché, la page de vérification le signalerait.</span></li>
+          </ol>
+          <button class="btn line" id="nextStep" type="button" data-i18n="next">Étape suivante →</button>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="tBiz">
+      <div class="biz">
+        <div><h2 id="tBiz" data-i18n="bizT">Pour les entreprises et les écoles</h2>
+          <p data-i18n="bizP">Fini les « mon train était en retard » invérifiables. Les justificatifs de vos équipes se vérifient en un clic, sans compte ni installation. Un espace pour les recevoir arrive.</p></div>
+        <a class="btn" href="#nouveautes" data-i18n="bizC">Nous contacter</a>
+      </div>
+    </section>
+
+    <section id="nouveautes" aria-labelledby="tSign">
+      <div class="signup">
+        <div class="sh" style="margin:0"><span class="kick" data-i18n="kSign">Nouveautés</span><h2 id="tSign" data-i18n="formTitle">Reste dans la boucle.</h2>
+          <p data-i18n="formSub">Un e-mail quand une grosse nouveauté arrive : appli installable, alertes du matin, offre entreprise. Rien d'autre.</p>
+          <div class="count" id="countWrap" hidden><span data-i18n="already">Déjà inscrits :</span> <b id="count">0</b></div></div>
         <form id="form" novalidate>
-          <label for="email"><span data-i18n="email">Ton email</span>
-            <input id="email" name="email" type="email" required autocomplete="email" maxlength="254" placeholder="prenom@exemple.fr">
-          </label>
+          <label for="email"><span data-i18n="email">Ton e-mail</span><input id="email" name="email" type="email" required autocomplete="email" maxlength="254" placeholder="prenom@exemple.fr"></label>
           <div class="row">
             <label for="profile"><span data-i18n="profile">Tu voyages…</span>
               <select id="profile" name="profile">
@@ -150,67 +219,30 @@ footer{border-top:1px solid var(--line);padding-block:22px 34px;color:var(--mute
                 <option value="grandes_lignes" data-i18n="pG">En grandes lignes</option>
                 <option value="les_deux" data-i18n="pB">Les deux</option>
                 <option value="entreprise" data-i18n="pE">Pour mon entreprise</option>
-              </select>
-            </label>
-            <label for="line"><span data-i18n="line">Ton trajet (facultatif)</span>
-              <input id="line" name="line" type="text" maxlength="80" placeholder="Lyon → Grenoble">
-            </label>
+              </select></label>
+            <label for="line"><span data-i18n="line">Ton trajet (facultatif)</span><input id="line" name="line" type="text" maxlength="80" placeholder="Lyon → Grenoble"></label>
           </div>
           <input class="hp" type="text" id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label class="check" for="consent"><input id="consent" name="consent" type="checkbox" required>
-            <span data-i18n="consent">J'accepte que LateProof garde mon email uniquement pour me prévenir du lancement. Je peux demander sa suppression à tout moment.</span>
-          </label>
-          <button class="cta" id="submit" type="submit" data-i18n="cta">M'inscrire</button>
+          <label class="check" for="consent"><input id="consent" name="consent" type="checkbox" required><span data-i18n="consent">J'accepte que LateProof garde mon e-mail uniquement pour m'écrire au sujet du service. Je peux demander sa suppression à tout moment.</span></label>
+          <button class="btn lime" id="submit" type="submit" data-i18n="cta">M'inscrire</button>
           <p class="msg" id="msg" role="status" aria-live="polite"></p>
         </form>
-        <div class="count" id="countWrap" hidden><span data-i18n="already">Déjà inscrits :</span> <b id="count">0</b></div>
-      </div>
-    </div>
-
-    <div class="board" aria-live="off">
-      <div class="title"><span data-i18n="boardTitle">Aujourd'hui en France · relevé toutes les 2 min</span><span class="live"><i></i><span id="updated">—</span> · <a href="carte.html" style="color:#8b98ad" data-i18n="mapLink">voir la carte →</a> · <a href="assistant.html" style="color:#8b98ad">demander au copilote →</a> · <a href="app.html" style="color:#8b98ad">mon espace →</a></span></div>
-      <div class="v" id="sTrains">—</div><div class="k" data-i18n="sTrains">trains suivis (SNCF + Île-de-France)</div>
-      <div class="v amber" id="sLate">—</div><div class="k" data-i18n="sLate">en retard de 15 min ou plus</div>
-      <div class="v" id="sCanc">—</div><div class="k" data-i18n="sCanc">supprimés</div>
-    </div>
-
-    <section aria-labelledby="demoTitle">
-      <h3 id="demoTitle" data-i18n="demoTitle">Essaie : une matinée avec LateProof</h3>
-      <p class="section-lede" data-i18n="demoLede">Appuie sur « Étape suivante » pour voir ce que fait l'app, du quai jusqu'au remboursement.</p>
-      <div class="demo">
-        <div class="phone" aria-hidden="true"><div class="screen">
-          <div class="h" data-i18n="phoneTitle">Mon trajet</div>
-          <div class="card" id="c1"><span class="t">07:59 · Lyon Part-Dieu</span><span data-i18n="c1">✓ Check-in : TER 8h12 vers Grenoble</span></div>
-          <div class="card hide" id="c2"><span class="t">08:20</span><span data-i18n="c2">Ton train a du retard</span><span class="chip">+27 MIN</span></div>
-          <div class="card hide" id="c3"><span class="t">08:31</span><span data-i18n="c3">Justificatif envoyé à ton manager</span><span class="chip ok">✓ VÉRIFIÉ</span></div>
-          <div class="card hide" id="c4"><span class="t" data-i18n="c4t">Mon mois</span><span class="big">+1,13 €</span><span data-i18n="c4">remboursés automatiquement</span></div>
-        </div></div>
-        <div>
-          <ol class="steps" id="steps">
-            <li class="on"><span class="n">1</span><span data-i18n="s1">Sur le quai, un tap : LateProof sait quel train tu prends. Ta position ne quitte pas ton téléphone.</span></li>
-            <li><span class="n">2</span><span data-i18n="s2">Le retard est constaté en temps réel, à partir des données officielles.</span></li>
-            <li><span class="n">3</span><span data-i18n="s3">Le justificatif part tout seul. Il est scellé : personne ne peut le falsifier, et ton manager le vérifie en scannant un QR code.</span></li>
-            <li><span class="n">4</span><span data-i18n="s4">Le remboursement s'ajoute à ton mois. Tu n'as rempli aucun formulaire.</span></li>
-          </ol>
-          <button class="ghost" id="nextStep" type="button" data-i18n="next">Étape suivante →</button>
-          <p class="note" data-i18n="demoNote">Démonstration illustrative. Les chiffres du tableau ci-dessus, eux, sont réels.</p>
-        </div>
       </div>
     </section>
 
-    <section aria-labelledby="faqTitle">
-      <h3 id="faqTitle" data-i18n="faqTitle">Questions fréquentes</h3>
+    <section aria-labelledby="tFaq">
+      <div class="sh"><h2 id="tFaq" data-i18n="faqTitle">Questions fréquentes</h2></div>
       <div class="faq">
-        <details><summary data-i18n="q1">Quand est-ce disponible ?</summary><p data-i18n="a1">Une première version est construite fin novembre 2026. Tu reçois un seul email quand tu peux l'essayer.</p></details>
-        <details><summary data-i18n="q2">Combien ça coûte ?</summary><p data-i18n="a2">Trois formules. Essentiel, environ 1 €/mois : alertes, plan B et justificatifs. Premium, environ 6 €/mois : en plus, le remboursement automatique de tes retards, les alertes vocales et les trajets de remplacement. Entreprise : sur mesure. Les grands voyages se couvrent à l'unité, pour environ 5 % du billet.</p></details>
-        <details><summary data-i18n="q3">Et ma localisation ?</summary><p data-i18n="a3">Elle sert uniquement, sur ton téléphone, à reconnaître ta gare au moment du départ. Elle n'est jamais envoyée ni stockée.</p></details>
-        <details><summary data-i18n="q4">Quels trains ?</summary><p data-i18n="a4">D'abord les TER, puis les grandes lignes. Nous enregistrons déjà toute la SNCF et les trains d'Île-de-France (RER, Transilien).</p></details>
+        <details><summary data-i18n="q1">Combien ça coûte ?</summary><p data-i18n="a1">L'essentiel est gratuit : retards en direct, check-in et justificatifs. Une formule Pro (prix indicatif : 5,99 € par mois ou 49 € par an) ajoutera le copilote complet, les alertes du matin et la voix. Pour les entreprises, une offre par salarié.</p></details>
+        <details><summary data-i18n="q2">Le justificatif, c'est vraiment fiable ?</summary><p data-i18n="a2">Il est signé par ton téléphone au moment du trajet, comparé aux relevés officiels SNCF et Île-de-France Mobilités, et la moindre retouche se voit. Le scellement public des relevés de chaque nuit (sur Solana) arrive prochainement.</p></details>
+        <details><summary data-i18n="q3">Et ma localisation ?</summary><p data-i18n="a3">Elle sert uniquement, sur ton téléphone, à reconnaître ta gare au moment du check-in. Tes trajets et justificatifs restent sur ton appareil.</p></details>
+        <details><summary data-i18n="q4">Quels trains ?</summary><p data-i18n="a4">Tous les trains SNCF en France (TGV, Intercités, TER), et en Île-de-France les RER et Transilien. Pour le métro et le tram, on suit la régularité, mais pas encore de justificatif : ils ne publient pas d'horaires.</p></details>
       </div>
     </section>
   </main>
 
   <footer>
-    <span data-i18n="legal">LateProof, projet étudiant en construction. Ton email n'est utilisé que pour le lancement et n'est jamais partagé.</span>
+    <span data-i18n="legal">LateProof, projet en construction. Ton e-mail n'est jamais partagé.</span>
     <span data-i18n="data">Données : SNCF open data, Île-de-France Mobilités.</span>
   </footer>
 </div>
@@ -219,93 +251,89 @@ footer{border-top:1px solid var(--line);padding-block:22px 34px;color:var(--mute
 <script>
 // ------------------------------------------------------------------ Textes FR / EN
 const I18N = {
-  en: {eyebrow:"Coming soon · trains in France", h1:"Your train is late. <em>You don't have to do a thing.</em>",
-    lede:"LateProof is your delay assistant. From €1 a month, it handles everything, automatically.",
-    before:"BEFORE", beforeTxt:"It warns you when your train is announced late, and finds you a plan B.",
-    during:"DURING", duringTxt:"It sends a tamper-proof certificate to your employer or school, before you even arrive.",
-    after:"AFTER", afterTxt:"It pays you back automatically, and claims the money your Region already owes you.",
-    formTitle:"Tell me when it launches", formSub:"One email, on launch day. Nothing else.", email:"Your email",
-    profile:"You travel…", pQ:"Every day", pG:"Long distance", pB:"Both", pE:"For my company", line:"Your route (optional)",
-    consent:"I agree that LateProof keeps my email only to tell me about the launch. I can ask for it to be deleted at any time.",
-    cta:"Sign me up", already:"Already signed up:", boardTitle:"Today in France · checked every 2 min",
-    sTrains:"trains tracked (SNCF + Île-de-France)", sLate:"15+ minutes late", sCanc:"cancelled",
-    demoTitle:"Try it: a morning with LateProof", demoLede:"Tap “Next step” to see what the app does, from the platform to the payout.",
-    phoneTitle:"My trip", c1:"✓ Check-in: 8:12 regional train to Grenoble", c2:"Your train is late", c3:"Certificate sent to your manager",
-    c4t:"My month", c4:"paid back automatically",
+  en: {navMap:"Map", navCopilot:"Copilot", navApp:"My space", kick:"Trains, RER, Transilien · France",
+    h1:"Your train derails. <em>Your day doesn't.</em>",
+    lede:"LateProof tracks your trip live, gives you a plan B before anyone else, and proves your delay with a simple link your manager checks in 3 seconds, with nothing to install.",
+    cta1:"Open the app", cta2:"Get the news", boardTitle:"Today in France", boardSub:"checked every 2 min",
+    sTrains:"trains tracked", sLate:"15+ minutes late", sCanc:"cancelled",
+    k3:"What LateProof does", h3:"Before, during, after the delay.", before:"BEFORE", during:"DURING", after:"AFTER",
+    bT:"The alert and the plan B", bP:"Strike announced, train cancelled, connection at risk: you're warned, and the copilot tells you which train to take instead.",
+    dT:"One tap on board", dP:"“I'm on board”: LateProof knows your train and tracks its delay minute by minute, connections included.",
+    aT:"Proof, no arguing", aP:"A certificate signed by your phone, checked against official data. Your manager or teacher verifies it in 3 seconds. And we tell you what you're entitled to.",
+    kDemo:"Try it", demoTitle:"A morning with LateProof.", demoLede:"Tap “Next step” to follow a trip, from the platform to the certificate.",
+    c1:"On board: 8:12 regional train to Grenoble", c2:"Your train is running late", c3t:"THE COPILOT", c3:"Your connection is lost. Take the 9:04, platform B.",
+    c4:"Certificate sent to your manager", c4c:"Verified",
     s1:"One tap on the platform: LateProof knows which train you're on. Your location never leaves your phone.",
-    s2:"The delay is confirmed in real time, from official data.",
-    s3:"The certificate goes out on its own. It's sealed: nobody can forge it, and your manager checks it with a QR code.",
-    s4:"The refund is added to your month. You filled in no form.", next:"Next step →", restart:"Start again ↺",
-    demoNote:"Illustrative demo. The numbers on the board above are real.",
-    faqTitle:"FAQ", q1:"When is it available?", a1:"A first version is being built in late November 2026. You get a single email when you can try it.",
-    q2:"How much does it cost?", a2:"Three plans. Essential, about €1/month: alerts, plan B and certificates. Premium, about €6/month: also automatic refunds for your delays, voice alerts and replacement trips. Business: tailored. Long trips are covered one at a time, for about 5% of the ticket.",
-    q3:"What about my location?", a3:"It's only used, on your phone, to recognise your station at departure time. It is never sent or stored.",
-    q4:"Which trains?", a4:"Regional trains first, then long distance. We already record all SNCF trains and Île-de-France trains (RER, Transilien).",
-    legal:"LateProof, a student project in progress. Your email is used only for the launch and is never shared.",
-    data:"Data: SNCF open data, Île-de-France Mobilités.",
-    ok:"You're on the list! We'll email you on launch day.", dup:"You're already on the list. See you on launch day!",
-    bad:"Please check your email address.", noConsent:"Please tick the box so we're allowed to email you.",
-    fail:"Sign-up didn't go through. Please try again in a minute.", mapLink:"see the map →", sending:"Sending…", updated:"updated"},
+    s2:"The delay is tracked live, from official SNCF and Île-de-France Mobilités data.",
+    s3:"The copilot works out your plan B before the connection is even missed.",
+    s4:"The certificate goes out as a link. It's sealed: if it were edited, the verification page would show it.",
+    next:"Next step →", restart:"Start again ↺",
+    bizT:"For companies and schools", bizP:"No more unverifiable “my train was late”. Your teams' certificates are checked in one click, no account or install. A space to receive them is coming.", bizC:"Contact us",
+    kSign:"News", formTitle:"Stay in the loop.", formSub:"One email when something big lands: installable app, morning alerts, business plan. Nothing else.",
+    already:"Already signed up:", email:"Your email", profile:"You travel…", pQ:"Every day", pG:"Long distance", pB:"Both", pE:"For my company", line:"Your route (optional)",
+    consent:"I agree that LateProof keeps my email only to write to me about the service. I can ask for it to be deleted at any time.", cta:"Sign me up",
+    faqTitle:"FAQ", q1:"How much does it cost?", a1:"The essentials are free: live delays, check-in and certificates. A Pro plan (indicative price: €5.99 a month or €49 a year) will add the full copilot, morning alerts and voice. For companies, a per-employee plan.",
+    q2:"Is the certificate really reliable?", a2:"It's signed by your phone during the trip, checked against official SNCF and Île-de-France Mobilités records, and any edit shows. Public sealing of each night's records (on Solana) is coming soon.",
+    q3:"What about my location?", a3:"It's only used, on your phone, to recognise your station at check-in. Your trips and certificates stay on your device.",
+    q4:"Which trains?", a4:"All SNCF trains in France (TGV, Intercités, regional), plus RER and Transilien in Île-de-France. For metro and tram we track regularity, but no certificate yet: they publish no timetable.",
+    legal:"LateProof, a project in progress. Your email is never shared.", data:"Data: SNCF open data, Île-de-France Mobilités.",
+    ok:"You're in! We'll write when something big lands.", dup:"You're already on the list.", bad:"Please check your email address.",
+    noConsent:"Please tick the box so we're allowed to email you.", fail:"Sign-up didn't go through. Please try again in a minute.", sending:"Sending…", updated:"updated"},
   fr: {}
 };
-// Les textes francais sont ceux du HTML : on les memorise au chargement.
 document.querySelectorAll("[data-i18n]").forEach(el => I18N.fr[el.dataset.i18n] = el.textContent);
 document.querySelectorAll("[data-i18n-html]").forEach(el => I18N.fr[el.dataset.i18nHtml] = el.innerHTML);
-Object.assign(I18N.fr, {ok:"C'est noté ! On t'écrit le jour du lancement.", dup:"Tu es déjà inscrit·e. À très vite !",
-  bad:"Vérifie ton adresse email.", noConsent:"Coche la case pour qu'on ait le droit de t'écrire.",
+Object.assign(I18N.fr, {ok:"C'est noté ! On t'écrit quand une grosse nouveauté arrive.", dup:"Tu es déjà inscrit·e. À très vite !",
+  bad:"Vérifie ton adresse e-mail.", noConsent:"Coche la case pour qu'on ait le droit de t'écrire.",
   fail:"L'inscription n'est pas passée. Réessaie dans une minute.", sending:"Envoi…", restart:"Recommencer ↺", updated:"mis à jour"});
 
 let lang = "fr";
-try { lang = localStorage.getItem("lp-lang") || (navigator.language || "fr").slice(0,2); } catch(e) {}
+try { lang = localStorage.getItem("lp-lang") || (navigator.language || "fr").slice(0, 2); } catch (e) {}
 if (!I18N[lang]) lang = "fr";
-function setLang(l){
+function setLang(l) {
   lang = l; document.documentElement.lang = l;
   document.querySelectorAll("[data-i18n]").forEach(el => { const v = I18N[l][el.dataset.i18n]; if (v) el.textContent = v; });
   document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = I18N[l][el.dataset.i18nHtml]; if (v) el.innerHTML = v; });
   document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
-  try { localStorage.setItem("lp-lang", l); } catch(e) {}
+  try { localStorage.setItem("lp-lang", l); } catch (e) {}
   if (lastStats) showStats(lastStats);
 }
 document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
 
-// ------------------------------------------------------------------ Supabase (cle publique, droits limites par la base)
+// ------------------------------------------------------------------ Donnees publiques (cle publique, droits limites par la base)
 const CFG = window.LP_CONFIG || {};
-const api = (path, opts = {}) => fetch(`${CFG.url}/rest/v1/${path}`, {...opts,
-  headers: {apikey: CFG.key, "Content-Type": "application/json", ...(opts.headers || {})}});
-const rpc = (fn) => api(`rpc/${fn}`, {method: "POST", body: "{}"}).then(r => r.ok ? r.json() : Promise.reject(r.status));
+const api = (path, opts = {}) => fetch(`${CFG.url}/rest/v1/${path}`, {...opts, headers: {apikey: CFG.key, "Content-Type": "application/json", ...(opts.headers || {})}});
+const rpc = fn => api(`rpc/${fn}`, {method: "POST", body: "{}"}).then(r => r.ok ? r.json() : Promise.reject(r.status));
 const nf = () => new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-GB");
-
 let lastStats = null;
-function showStats(s){
+function showStats(s) {
   lastStats = s;
   document.getElementById("sTrains").textContent = nf().format(s.trains);
   document.getElementById("sLate").textContent = nf().format(s.late15);
   document.getElementById("sCanc").textContent = nf().format(s.cancelled);
-  if (s.updated_at) document.getElementById("updated").textContent = `${I18N[lang].updated} ${new Date(s.updated_at * 1000).toLocaleTimeString(lang === "fr" ? "fr-FR" : "en-GB", {hour: "2-digit", minute: "2-digit"})}`;
+  if (s.updated_at) document.getElementById("updated").textContent = `${I18N[lang].updated} ${new Date(s.updated_at * 1000).toLocaleTimeString(lang === "fr" ? "fr-FR" : "en-GB", {hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris"})}`;
 }
-function loadStats(){ if (CFG.url) rpc("public_today_stats").then(showStats).catch(() => {}); }
-function loadCount(){
+function loadStats() { if (CFG.url) rpc("public_today_stats").then(showStats).catch(() => {}); }
+function loadCount() {
   if (!CFG.url) return;
   rpc("waitlist_count").then(n => { if (n >= 10) { document.getElementById("count").textContent = nf().format(n); document.getElementById("countWrap").hidden = false; } }).catch(() => {});
 }
 
-// ------------------------------------------------------------------ Inscription
+// ------------------------------------------------------------------ Inscription aux nouveautes (meme table que la preinscription)
 const form = document.getElementById("form"), msg = document.getElementById("msg"), btn = document.getElementById("submit");
 const say = (key, cls) => { msg.textContent = I18N[lang][key]; msg.className = "msg " + (cls || ""); };
-form.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async e => {
   e.preventDefault();
-  if (form.website.value) return;                       // piege a robots
+  if (form.website.value) return;                                  // piege a robots
   const email = form.email.value.trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say("bad", "err"); form.email.focus(); return; }
   if (!form.consent.checked) { say("noConsent", "err"); form.consent.focus(); return; }
   btn.disabled = true; say("sending");
   const params = new URLSearchParams(location.search);
-  // Retenu dans CE navigateur seulement (pas d'email) : la carte s'ouvre ensuite sur ton profil et ton trajet.
   try { localStorage.setItem("lp-profile", form.profile.value); if (form.line.value.trim()) localStorage.setItem("lp-line", form.line.value.trim()); } catch (e2) {}
   try {
     const r = await api("waitlist", {method: "POST", headers: {Prefer: "return=minimal"},
-      body: JSON.stringify({email, lang, profile: form.profile.value, line: form.line.value.trim() || null, consent: true,
-                            source: (params.get("src") || "site").slice(0, 40)})});
+      body: JSON.stringify({email, lang, profile: form.profile.value, line: form.line.value.trim() || null, consent: true, source: (params.get("src") || "site").slice(0, 40)})});
     if (r.ok) { say("ok", "ok"); form.reset(); loadCount(); }
     else if (r.status === 409) say("dup", "ok");
     else say("fail", "err");
@@ -313,11 +341,11 @@ form.addEventListener("submit", async (e) => {
   btn.disabled = false;
 });
 
-// ------------------------------------------------------------------ Pre-demo pas a pas
+// ------------------------------------------------------------------ Demonstration pas a pas
 let step = 0;
-document.getElementById("nextStep").addEventListener("click", (e) => {
+document.getElementById("nextStep").addEventListener("click", e => {
   step = (step + 1) % 4;
-  ["c2","c3","c4"].forEach((id, i) => document.getElementById(id).classList.toggle("hide", step < i + 1));
+  ["c2", "c3", "c4"].forEach((id, i) => document.getElementById(id).classList.toggle("hide", step < i + 1));
   document.querySelectorAll("#steps li").forEach((li, i) => li.classList.toggle("on", i <= step));
   e.currentTarget.textContent = step === 3 ? I18N[lang].restart : I18N[lang].next;
 });
