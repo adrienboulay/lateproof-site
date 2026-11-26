@@ -7,13 +7,13 @@
 <meta name="description" content="Ton copilote quand le train déraille : retards en direct, plan B, et un justificatif de retard que ton manager vérifie en 3 secondes, sans appli.">
 <meta property="og:title" content="LateProof · Le retard, prouvé">
 <meta property="og:description" content="Retards en direct, plan B, et un justificatif vérifiable en 3 secondes.">
-<meta name="theme-color" content="#0B0C0F">
+<meta name="theme-color" content="#121417">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23D4FF3A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%230B0C0F' stroke-width='10' stroke-linecap='round' pathLength='360' stroke-dasharray='120 360' transform='rotate(-90 32 32)'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%230B0C0F'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
-:root{--bg:#0B0C0F;--surface:#17191E;--surface2:#22252B;--fg:#F4F5F0;--muted:#A7AAB2;--line:#2A2D33;--lime:#D4FF3A;--orange:#FF6A3D;
-  --display:"Manrope","Segoe UI",system-ui,sans-serif;--head:"Unbounded","Manrope",sans-serif;color-scheme:dark}
+:root{--bg:#121417;--surface:#1A1D21;--surface2:#22262B;--surface3:#2B3036;--fg:#E6E6E0;--muted:#9DA2AA;--line:#2B3036;--lime:#D4FF3A;--orange:#FF8A5C;
+  --display:"Manrope","Segoe UI",system-ui,sans-serif;--head:"Bricolage Grotesque","Manrope",sans-serif;--mono:"Manrope","Segoe UI",system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
@@ -40,11 +40,6 @@ h1,h2,h3{font-family:var(--head);letter-spacing:-.04em;line-height:1.05;margin:0
 .hero h1 em{font-style:normal;color:var(--lime)}
 .lede{font-size:1.2rem;color:#C9CCD3;margin:22px 0 30px;max-width:34rem}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
-.dial{position:relative;aspect-ratio:1;max-width:440px;width:100%;justify-self:center;border-radius:28%;background:var(--lime);display:grid;place-items:center}
-.dial svg{width:76%;height:76%}
-.dial .arc{stroke-dasharray:0 360;animation:arc 3.2s cubic-bezier(.2,.8,.2,1) .4s forwards}
-.dial .count{position:absolute;right:-6%;bottom:8%;background:var(--orange);color:#0B0C0F;border-radius:999px;padding:10px 20px;font:800 clamp(1.3rem,2.6vw,2rem) var(--head);letter-spacing:-.05em;box-shadow:0 10px 30px rgb(0 0 0/.35)}
-@keyframes arc{to{stroke-dasharray:120 360}}
 
 .board{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin-bottom:72px}
 .board .lbl{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:20px 24px;border-radius:24px;background:var(--surface);min-width:230px}
@@ -110,6 +105,46 @@ footer{border-top:1px solid var(--line);padding-block:26px 40px;color:var(--mute
 @media (max-width:900px){.hero,.demo,.signup,.biz{grid-template-columns:1fr}.three,.faq{grid-template-columns:1fr}.board{grid-template-columns:1fr 1fr}.board .lbl{grid-column:1/-1}.dial{max-width:300px}.nav a.hs{display:none}}
 @media (max-width:480px){.row{grid-template-columns:1fr}.board{grid-template-columns:1fr}.phone{max-width:320px;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.dial .arc{stroke-dasharray:120 360}}
+
+/* ---- Revision E : calme et relief ---- */
+h1,h2,h3{font-weight:700;letter-spacing:-.015em}
+.hero h1{font-size:clamp(2.4rem,5.4vw,4.2rem);letter-spacing:-.025em;line-height:1.04}
+.hero h1 em{color:var(--fg);text-decoration:underline;text-decoration-color:var(--lime);text-decoration-thickness:.07em;text-underline-offset:.12em}
+.brand{font:700 1.25rem var(--head);letter-spacing:-.02em}
+.btn.line{border:0;background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.08)}
+.lang{box-shadow:inset 0 1px 0 rgb(255 255 255/.06)}
+.lang button[aria-pressed="true"]{background:var(--surface3);color:var(--lime)}
+.phonehero{justify-self:center;width:min(330px,100%);border-radius:42px;padding:10px;background:var(--surface3);box-shadow:inset 0 1px 0 rgb(255 255 255/.12),0 30px 70px rgb(0 0 0/.55)}
+.ph{display:flex;flex-direction:column;gap:12px;min-height:520px;border-radius:34px;background:var(--bg);padding:22px 16px}
+.ph-sub{font-size:.8rem;color:var(--muted)}
+.ph-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ph-row b:first-child{font:700 1.7rem var(--head);letter-spacing:-.02em}
+#phDelay{font:700 1.25rem var(--head);color:var(--orange)}#phDelay.ph-ok{color:var(--lime)}
+.ph-track{position:relative;height:44px;margin:4px 6px}
+.ph-rail,.ph-fill{position:absolute;left:0;top:20px;height:4px;border-radius:2px;background:var(--surface3);right:0}
+.ph-fill{right:auto;width:0;background:var(--fg)}
+.ph-stop{position:absolute;top:15px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--bg);border:3px solid #4A5058;box-sizing:border-box}
+.ph-stop.on{border-color:var(--fg)}
+.ph-train{position:absolute;top:11px;left:0;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 6px rgb(212 255 58/.14)}
+.ph-names{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted)}
+.ph-card{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:18px;background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.08);font-size:.85rem;color:var(--muted);transition:opacity .4s,transform .4s}
+.ph-card b{color:var(--fg);font-size:.9rem}
+.ph-btn{display:grid;place-items:center;min-height:38px;margin-top:4px;border-radius:19px;background:var(--lime);color:#121417;font-weight:800}
+.ph-proof{display:flex;align-items:center;gap:10px;margin-top:auto;padding:12px 14px;border-radius:18px;background:var(--surface);font-size:.8rem;color:var(--muted);transition:opacity .4s}
+.ph-proof b{color:var(--fg);font-size:.88rem}
+.ph-ok-dot{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:var(--lime)}
+.lbl,.stat,.pill3,details,.signup{box-shadow:inset 0 1px 0 rgb(255 255 255/.06)}
+.stat b{font-weight:700;letter-spacing:-.025em}
+.pill3 h3{font-size:1.3rem}
+.pill3 .tag{background:var(--surface3)!important;color:var(--fg)!important}
+.pill3 .tag.k-l{color:var(--lime)!important}.pill3 .tag.k-o{color:var(--orange)!important}
+.screen .card{background:var(--surface2);box-shadow:inset 0 1px 0 rgb(255 255 255/.06)}
+.card.lime{background:var(--surface2);color:var(--fg)}.card.lime .t{color:var(--lime)}
+.chip.o{background:rgb(255 138 92/.14);color:var(--orange)}.chip.k{background:rgb(212 255 58/.12);color:var(--lime)}
+.biz{background:var(--surface2);color:var(--fg);box-shadow:inset 0 1px 0 rgb(255 255 255/.08)}
+.biz p{color:#C5C8CD}
+.biz .btn{background:var(--lime);color:#121417}
+input,select{background:var(--bg);border-color:var(--surface3)}
 </style>
 </head>
 <body>
@@ -137,9 +172,17 @@ footer{border-top:1px solid var(--line);padding-block:26px 40px;color:var(--mute
           <a class="btn line" href="#nouveautes" data-i18n="cta2">Être prévenu des nouveautés</a>
         </div>
       </div>
-      <div class="dial" role="img" aria-label="Le logo LateProof : l'aiguille dépasse l'heure prévue, l'arc mesure le retard">
-        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-opacity=".18" stroke-width="5"/><circle class="arc" cx="32" cy="32" r="19" fill="none" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round" pathLength="360" transform="rotate(-90 32 32)"/><path d="M32 32L32 21" stroke="#0B0C0F" stroke-width="5" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 32 32;120 32 32" dur="3.2s" begin="0.4s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .8 .2 1"/></path><circle cx="32" cy="32" r="4" fill="#0B0C0F"/></svg>
-        <span class="count" aria-hidden="true">+27 min</span>
+      <div class="phonehero" role="img" aria-label="Démonstration animée : le train avance, le retard se met à jour, le plan B s'affiche, puis le justificatif est prêt">
+        <div class="ph">
+          <span class="ph-sub">TER C18 · vers Saint-Étienne</span>
+          <span class="ph-row"><b id="phArr">Arrivée 12h40</b><b id="phDelay" class="ph-ok">à l'heure</b></span>
+          <div class="ph-track"><span class="ph-rail"></span><span class="ph-fill" id="phFill"></span>
+            <span class="ph-stop" style="left:0%"></span><span class="ph-stop" style="left:33%"></span><span class="ph-stop" style="left:66%"></span><span class="ph-stop" style="left:100%"></span>
+            <span class="ph-train" id="phTrain"></span></div>
+          <span class="ph-names"><span>Lyon</span><span>Givors</span><span>Rive-de-G.</span><span>St-Étienne</span></span>
+          <div class="ph-card" id="phAdvice"><b>Correspondance de 13h02 compromise</b><span>Prends le car de 13h10, arrivée 13h35.</span><span class="ph-btn">Voir le plan B</span></div>
+          <div class="ph-proof" id="phProof"><span class="ph-ok-dot"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#121417" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>Justificatif prêt</b><br>un lien, vérifiable en 3 s</span></div>
+        </div>
       </div>
     </div>
 
@@ -154,19 +197,19 @@ footer{border-top:1px solid var(--line);padding-block:26px 40px;color:var(--mute
       <div class="sh"><h2 id="t3" data-i18n="h3">Avant, pendant, après le retard.</h2></div>
       <div class="three">
         <article class="pill3">
-          <span class="tag" style="background:var(--lime);color:#0B0C0F" data-i18n="before">AVANT</span>
+          <span class="tag k-l" data-i18n="before">AVANT</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
           <h3 data-i18n="bT">L'alerte et le plan B</h3>
           <p data-i18n="bP">Grève annoncée, train supprimé, correspondance compromise : tu es prévenu, et le copilote te dit quel train prendre à la place.</p>
         </article>
         <article class="pill3">
-          <span class="tag" style="background:var(--orange);color:#0B0C0F" data-i18n="during">PENDANT</span>
+          <span class="tag k-o" data-i18n="during">PENDANT</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="11" height="18" rx="2.5"/><path d="M2 12h9M8 9l3 3-3 3"/></svg>
           <h3 data-i18n="dT">Un geste à bord</h3>
           <p data-i18n="dP">« Je suis à bord » : LateProof sait quel train tu prends et suit son retard minute par minute, même avec des correspondances.</p>
         </article>
         <article class="pill3">
-          <span class="tag" style="background:var(--fg);color:#0B0C0F" data-i18n="after">APRÈS</span>
+          <span class="tag" data-i18n="after">APRÈS</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.2-7 10-4-1.8-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
           <h3 data-i18n="aT">La preuve, sans discussion</h3>
           <p data-i18n="aP">Un justificatif signé par ton téléphone, comparé aux données officielles. Ton manager ou ton prof le vérifie en 3 secondes. Et on te dit à quoi tu as droit.</p>
@@ -348,6 +391,29 @@ document.getElementById("nextStep").addEventListener("click", e => {
   document.querySelectorAll("#steps li").forEach((li, i) => li.classList.toggle("on", i <= step));
   e.currentTarget.textContent = step === 3 ? I18N[lang].restart : I18N[lang].next;
 });
+
+
+// ------------------------------------------------------------------ Telephone de l'accueil : le train avance, le retard monte, le plan B arrive
+(function () {
+  const $ = id => document.getElementById(id);
+  const fill = $("phFill"), train = $("phTrain"), delay = $("phDelay"), arr = $("phArr"), advice = $("phAdvice"), proof = $("phProof");
+  if (!fill) return;
+  const stops = [...document.querySelectorAll(".ph-stop")];
+  const c = x => Math.max(0, Math.min(1, x)), e = x => 1 - Math.pow(1 - x, 3);
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function frame(T) {
+    const p = e(c(T / 9000)), late = Math.round(18 * e(c((T - 1500) / 3000)));
+    fill.style.width = (p * 100) + "%"; train.style.left = (p * 100) + "%";
+    stops.forEach((s, i) => s.classList.toggle("on", p * 100 >= i * 33));
+    delay.textContent = late ? "+" + late + " min" : (lang === "en" ? "on time" : "à l'heure"); delay.classList.toggle("ph-ok", !late);
+    arr.textContent = (lang === "en" ? "Arrival " : "Arrivée ") + "12h" + String(40 + late).padStart(2, "0");
+    const a = e(c((T - 4200) / 500)); advice.style.opacity = a; advice.style.transform = `translateY(${(1 - a) * 10}px)`;
+    proof.style.opacity = 0.25 + 0.75 * e(c((T - 9200) / 500));
+  }
+  if (still) { frame(11000); return; }
+  const t0 = performance.now();
+  (function loop(now) { frame((now - t0) % 12000); requestAnimationFrame(loop); })(t0);
+})();
 
 setLang(lang); loadStats(); loadCount(); setInterval(loadStats, 120000);
 </script>
