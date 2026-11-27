@@ -1,7 +1,7 @@
-# LateProof · page de préinscription
+# LateProof : ce dépôt a déménagé
 
-Page publique (FR/EN) : promesse, chiffres du jour en direct, pré-démo et inscription au lancement.
-Publiée automatiquement sur GitHub Pages à chaque push.
+Le site et tout le projet sont maintenant dans un seul dépôt : **https://github.com/adrienboulay/lateproof**
+(site en ligne : https://adrienboulay.github.io/lateproof/).
 
-Secrets du dépôt nécessaires : `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (clé **publique** « publishable » de Supabase,
-conçue pour le navigateur ; les droits sont limités par la base : insérer une inscription avec consentement et lire deux compteurs).
+Ce dépôt ne sert plus qu'à rediriger les anciens liens (`/lateproof-site/...`) vers la nouvelle adresse,
+en gardant le `#…` des justificatifs déjà partagés.
